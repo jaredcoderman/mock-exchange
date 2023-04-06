@@ -2,3 +2,6 @@ __pycache__
 lib
 .env
 Dockerfile
+
+data/*
+!data/.gitkeep
