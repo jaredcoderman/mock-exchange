@@ -2,12 +2,13 @@ import discord
 import os
 import asyncio
 import nest_asyncio
-import db_init
 
+from dotenv import load_dotenv
+
+load_dotenv()
 nest_asyncio.apply()
 
 from discord.ext import commands
-from webserver import keep_alive
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -26,12 +27,13 @@ async def load():
     if filename.endswith(".py"):
       await bot.load_extension(f"cogs.{filename[:-3]}")
 
+TOKEN = os.getenv("DISCORD_BOT_SECRET")
+
 async def main():
   await load()
-  await bot.run(os.environ['DISCORD_BOT_SECRET'])
+  await bot.run(TOKEN)
 
 asyncio.run(main())
-keep_alive()
 
 
 

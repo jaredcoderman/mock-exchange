@@ -1,10 +1,7 @@
 import discord
 import time
 import matplotlib.pyplot as plt
-import dufte
 import asyncio
-
-plt.style.use(dufte.style)
 
 from threading import Thread
 from discord.ext import commands
@@ -22,19 +19,20 @@ stocks = {
 async def run_stocks(bot):
   global stocks
   channel = bot.get_channel(1090713568913146066)
-  msg = await channel.send("Loading stocks...")
+  #msg = await channel.send("Loading stocks...")
   for x in range(0, 250):
     for stock in stocks.values():
       stock.get_next_price()
   while True:
     for stock in stocks.values():
       stock.get_next_price()
-    stock_msg = ""
-    for stock in stocks.values():
-      stock_msg += f"{stock.name}: {round(stock.get_price(), 2)}\n"
-    await msg.edit(content=stock_msg)
-    await msg.pin()
-    time.sleep(3)
+    await asyncio.sleep(3)
+    #stock_msg = ""
+    #for stock in stocks.values():
+    #  stock_msg += f"{stock.name}: {round(stock.get_price(), 2)}#\n"
+    #await msg.edit(content=stock_msg)
+    #await msg.pin()
+
 
 def callback(bot):
   asyncio.run(run_stocks(bot))
@@ -76,20 +74,20 @@ class StockCog(commands.Cog):
     total_price = round(stock.get_price() * float(amount), 2)
     id = str(ctx.author.id)
     bank = self.bot.get_cog("BankCog").bank
-    if bank.get_cash(id) >= total_price:
-      bank.change_cash(id, total_price * -1)
-      bank.add_certificate(id, name, int(amount), total_price)
-      shares, value = bank.get_shares(id, name)
+    if bank.get_cash(ctx.guild.id, id) >= total_price:
+      bank.change_cash(ctx.guild.id, id, total_price * -1)
+      bank.add_certificate(ctx.guild.id, id, name, int(amount), total_price)
+      shares, value = bank.get_shares(ctx.guild.id, id, name)
       msg = f"<@{id}> purchased {amount} shares of {stock.name} for ${total_price} at ${price} per share. You now have {str(shares)} shares"
       await ctx.send(msg)
     else:
-      await ctx.send(f"<@{id}> not enough money. Total price is ${total_price}, you have ${str(bank.get_cash(id))}")
+      await ctx.send(f"<@{id}> not enough money. Total price is ${total_price}, you have ${str(bank.get_cash(ctx.guild.id, id))}")
 
   @commands.command("shares")
   async def shares(self, ctx, name):
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
-    shares, value = bank.get_shares(id, name)
+    shares, value = bank.get_shares(ctx.guild.id, id, name)
     global stocks
     msg = f"<@{id}> has {str(shares)} shares in {name} worth ${str(value)}"
     await ctx.send(msg)
@@ -99,7 +97,7 @@ class StockCog(commands.Cog):
     global stocks
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
-    shares, value = bank.get_shares(id, name)
+    shares, value = bank.get_shares(ctx.guild.id, id, name)
     price = round(stocks[name].get_price(), 2)
     total_sell_price = price * int(shares)
     profit = round((total_sell_price - value), 2)
@@ -114,8 +112,8 @@ class StockCog(commands.Cog):
       timeout=None,
     )
     if str(reaction) == "👍":
-      bank.remove_shares(id, name)
-      bank.change_cash(id, total_sell_price)
+      bank.remove_shares(ctx.guild.id, id, name)
+      bank.change_cash(ctx.guild.id, id, total_sell_price)
       msg = f"<@{id}> sold {shares} shares of {stocks[name].name} for ${round(total_sell_price, 2)} and made ${profit} in profit!"
       await ctx.send(msg)
     elif str(reaction) == "👎":
