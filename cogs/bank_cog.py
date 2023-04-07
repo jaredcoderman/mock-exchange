@@ -24,7 +24,7 @@ class BankCog(commands.Cog):
   @commands.cooldown(1, 86400, commands.BucketType.user)
   async def daily(self, ctx):
     id = str(ctx.author.id)
-    self.bank.change_cash(ctx.guild.id, id, 1000)
+    self.bank.change_cash(id, 1000)
     msg = f"<@{id}> claimed their daily reward for $1000"
     await ctx.send(msg)
       
@@ -32,7 +32,7 @@ class BankCog(commands.Cog):
   @commands.command("balance")
   async def balance(self, ctx):
     id = str(ctx.author.id)
-    amt = str(round(self.bank.get_cash(ctx.guild.id, id), 2))
+    amt = str(round(self.bank.get_cash(id), 2))
     msg = f"<@{id}> has ${amt}"
     await ctx.send(msg)
     
