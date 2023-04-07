@@ -1,6 +1,7 @@
 import discord
 import time
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import numpy as np
 import asyncio
 
@@ -62,7 +63,7 @@ def get_image(stock):
       
       # plot the current price as a line segment
       if i > 0:
-          plt.plot([i-1, i], [prev_price, price], color=line_color)
+          plt.plot([i-1, i], [prev_price, price], color=line_color, linestyle=":")
 
       # update the previous price
       prev_price = price
@@ -81,10 +82,25 @@ def get_image(stock):
       plt.scatter(len(prices)-1, prices[-1], s=50, marker='v', c='r', label=f"Current Share Price: ${last_price}")
   padding = len(prices) * 0.1
   ax.set_xlim([0, len(prices) - 1 + padding])
-  plt.xlabel('Time')
-  plt.ylabel('Price')
+  plt.xlabel('Time', fontdict={'family': 'Courier New', 'size': 12, 'weight': 'bold'}).set_color("#ffffff")
+  plt.ylabel('Price', fontdict={'family': 'Courier New', 'size': 12, 'weight': 'bold'}).set_color("#ffffff")
 
-  legend = plt.legend(facecolor="#000000", labelcolor="white")
+  # Add a prefix ($) to the y-axis labels
+  def currency_fmt(x, pos):
+      return '${:,.0f}'.format(x)
+
+  formatter = ticker.FuncFormatter(currency_fmt)
+  ax.yaxis.set_major_formatter(formatter)
+
+  #font
+  plt.rcParams['font.family'] = 'Courier New'
+  plt.rcParams['font.weight'] = "bold"
+  for tick in ax.get_xticklabels():
+    tick.set_fontname("Courier New")
+  for tick in ax.get_yticklabels():
+    tick.set_fontname("Courier New")
+
+  legend = plt.legend(facecolor="#000000", labelcolor="white", edgecolor="#000000")
   current_axis = plt.gca()
   current_axis.set_facecolor('#000000')
   plt.savefig("test.png")
@@ -107,7 +123,7 @@ class StockCog(commands.Cog):
     id = str(ctx.author.id)
     global stocks
     stock = stocks[name.lower()]
-    price = str(round(stock.get_price(), 2))
+    price = str(stock.get_price(True))
     msg = f"<@{id}> {stock.name} is valued at ${price} per share"
     image = get_image(stock)
     await ctx.send(msg, file=image)
@@ -116,8 +132,8 @@ class StockCog(commands.Cog):
   async def buy(self, ctx, name, amount):
     global stocks
     stock = stocks[name]
-    price = round(stock.get_price(), 2)
-    total_price = round(stock.get_price() * float(amount), 2)
+    price = stock.get_price(True)
+    total_price = round(stock.get_price(False) * float(amount), 2)
     id = str(ctx.author.id)
     bank = self.bot.get_cog("BankCog").bank
     if bank.get_cash(id) >= total_price:
@@ -138,13 +154,31 @@ class StockCog(commands.Cog):
     msg = f"<@{id}> has {str(shares)} shares in {name} worth ${str(value)}"
     await ctx.send(msg)
 
+  @commands.command("portfolio")
+  async def portfolio(self, ctx):
+    global stocks
+    total_stocks = {}
+    bank = self.bot.get_cog("BankCog").bank
+    id = str(ctx.author.id)
+    total_value = 0
+    for stock in stocks.keys():
+      shares, value = bank.get_shares(id, stock)
+      if shares > 0:
+        total_stocks[stock] = {"shares": shares, "value": value}
+        total_value += value
+    msg = f"<@{id}>'s portfolio:\n"
+    for stock, data in total_stocks.items():
+      msg += f"{data['shares']} {stock.capitalize()}: ${data['value']}\n"
+    msg += f"Total Worth: ${total_value}"
+    await ctx.send(msg)
+
   @commands.command("sell")
   async def sell(self, ctx, name):
     global stocks
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
     shares, value = bank.get_shares(id, name)
-    price = round(stocks[name].get_price(), 2)
+    price = stocks[name].get_price(True)
     total_sell_price = price * int(shares)
     profit = round((total_sell_price - value), 2)
     msg = await ctx.send(f"<@{id}> are you sure you want to sell {shares} {stocks[name].name} for a profit of ${profit}")
@@ -164,6 +198,14 @@ class StockCog(commands.Cog):
       await ctx.send(msg)
     elif str(reaction) == "👎":
       await ctx.send(f"<@{id}> sale cancelled...")
+
+  @commands.command("stocks")
+  async def stocks(self, ctx):
+    global stocks
+    msg = ""
+    for stock in stocks.values():
+      msg += f"{stock.name}: ${stock.get_price(True)}\n"
+    await ctx.send(msg)
 
 async def setup(bot):
   await bot.add_cog(StockCog(bot))

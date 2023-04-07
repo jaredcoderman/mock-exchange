@@ -32,8 +32,11 @@ class Stock:
       self.add_to_previous_prices(self.last_price)
     return price
 
-  def get_price(self):
-    return self.last_price
+  def get_price(self, rounded):
+    if rounded:
+      return round(self.last_price, 2)
+    else:
+      return self.last_price
 
   def get_previous_prices(self):
     return self.previous_prices
