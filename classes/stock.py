@@ -7,7 +7,7 @@ class Stock:
     self.previous_prices = []
     self.time_spot = 0
     self.last_price = 0
-    self.max_prices = 250
+    self.max_prices = 100
 
   def reset_stock_data(self, price):
     self.data = get_stock_data(price)

@@ -82,8 +82,9 @@ def get_image(stock):
       plt.scatter(len(prices)-1, prices[-1], s=50, marker='v', c='r', label=f"Current Share Price: ${last_price}")
   padding = len(prices) * 0.1
   ax.set_xlim([0, len(prices) - 1 + padding])
-  plt.xlabel('Time', fontdict={'family': 'Courier New', 'size': 12, 'weight': 'bold'}).set_color("#ffffff")
-  plt.ylabel('Price', fontdict={'family': 'Courier New', 'size': 12, 'weight': 'bold'}).set_color("#ffffff")
+  plt.xlabel('Time', fontdict={'family': 'Courier New', 'size': 12, 'weight': '500'}).set_color("#ffffff")
+  plt.ylabel('Price', fontdict={'family': 'Courier New', 'size': 12, 'weight': '500'}).set_color("#ffffff")
+  plt.title(stock.name, fontdict={'family': 'Courier New', 'size': 16, 'weight': '900'}, loc="left").set_color("#ffffff")
 
   # Add a prefix ($) to the y-axis labels
   def currency_fmt(x, pos):
@@ -161,6 +162,7 @@ class StockCog(commands.Cog):
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
     total_value = 0
+    total_profit = 0
     for stock in stocks.keys():
       shares, value = bank.get_shares(id, stock)
       if shares > 0:
@@ -168,8 +170,21 @@ class StockCog(commands.Cog):
         total_value += value
     msg = f"<@{id}>'s portfolio:\n"
     for stock, data in total_stocks.items():
-      msg += f"{data['shares']} {stock.capitalize()}: ${data['value']}\n"
-    msg += f"Total Worth: ${total_value}"
+      original_price = data["value"] / data["shares"]
+      profit = round(original_price - stocks[stock].get_price(False), 2)
+      total_profit += profit
+      emoji = ""
+      if profit > 0:
+        emoji = ":green_circle:"
+      else:
+        emoji = ":red_circle:"
+      msg += f"{data['shares']} {stock.capitalize()}: ${data['value']} Profit: ${profit} {emoji}\n"
+    total_emoji = ""
+    if total_profit > 0:
+      total_emoji = ":green_circle:"
+    else:
+      total_emoji = ":red_circle:"
+    msg += f"Total Worth: ${round(total_value, 2)} Total Profit: ${round(total_profit, 2)} {total_emoji}"
     await ctx.send(msg)
 
   @commands.command("sell")

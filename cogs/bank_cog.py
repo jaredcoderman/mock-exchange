@@ -6,14 +6,11 @@ from classes.bank import Bank
 class BankCog(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
-    self.bank = Bank()
 
   @commands.Cog.listener()
   async def on_ready(self):
     print("Bank cog online...")
-    guild = discord.utils.get(self.bot.guilds, name="BotTesting")
-    for member in guild.members:
-      id = str(member.id)
+    self.bank = Bank(self.bot)
 
   #@commands.Cog.listener()
   #async def on_command_error(self, ctx, error):

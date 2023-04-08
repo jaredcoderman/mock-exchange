@@ -24,7 +24,8 @@ class DBCog(commands.Cog):
 
   @commands.Cog.listener()
   async def on_ready(self):
-    pass
+    print("Database cog online...")
+    self.db.init_data()
     #data = get_init_db_data(self.bot.guilds)
     #self.db.update_data(data)
 
