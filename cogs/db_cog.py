@@ -3,6 +3,7 @@ import json
 
 from discord.ext import commands
 from pathlib import Path
+from classes.database import Database
 
 def get_init_db_data(guilds):
   default_dict = {
@@ -19,14 +20,14 @@ class DBCog(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
     self.guilds = []
+    self.db = Database()
 
   @commands.Cog.listener()
   async def on_ready(self):
-    file = Path(f"./data/db.json")
-    if not file.is_file():
-      with open(f"./data/db.json", "w") as f:
-        data = get_init_db_data(self.bot.guilds)
-        f.write(data)
+    pass
+    #data = get_init_db_data(self.bot.guilds)
+    #self.db.update_data(data)
+
 
 async def setup(bot):
   await bot.add_cog(DBCog(bot))

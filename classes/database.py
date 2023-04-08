@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 
 async def make_request():
   response = requests.get(url, headers=headers)
-  print(response.text)
 
 class Database:
     def __init__(self):
@@ -13,12 +12,20 @@ class Database:
         self.master_key = os.getenv("X-MASTER-KEY")
         self.access_key = os.getenv("X-ACCESS-KEY")
 
-    async def get_data(self):
+    def get_data(self):
         headers = {
             "X-Master-Key": self.master_key,
             "X-Access-Key": self.access_key
         }
         response = requests.get(self.url, headers=headers)
         return json.loads(response.text)
+
+    def update_data(self, data):
+        headers = {
+            "X-Master-Key": self.master_key,
+            "X-Access-Key": self.access_key,
+            "Content-Type": "application/json"
+        }
+        response = requests.put(self.url, headers=headers, data=data)
 
     

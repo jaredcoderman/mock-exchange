@@ -1,15 +1,16 @@
 import json
 
+from classes.database import Database
+
+db = Database()
+
 def get_data():
-  data = open(f"./data/db.json", "r").read()
-  db = json.loads(data)
-  return db
+  global db
+  return db.get_data()["record"]
 
 def write_to_db(data):
-  with open(f"./data/db.json", "w") as f:
-    f.write(json.dumps(data))
-
-
+  global db
+  db.update_data(json.dumps(data))
 
 class Bank:
   def get_cash(self, id):
@@ -24,6 +25,7 @@ class Bank:
     id = str(id)
     amt = round(amt, 2)
     data = get_data()
+    print(data)
     if id in data["user_money"]:
       data["user_money"][id] += amt
     else:
