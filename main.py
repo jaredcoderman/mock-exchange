@@ -2,7 +2,9 @@ import discord
 import os
 import asyncio
 import nest_asyncio
+import json
 
+from classes.database import Database
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -28,8 +30,10 @@ async def load():
       await bot.load_extension(f"cogs.{filename[:-3]}")
 
 TOKEN = os.getenv("DISCORD_BOT_SECRET")
+db = Database()
 
 async def main():
+  data = await db.get_data()
   await load()
   await bot.run(TOKEN)
 

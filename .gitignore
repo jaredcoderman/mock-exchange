@@ -2,6 +2,9 @@ __pycache__
 lib
 .env
 Dockerfile
-
+poetry.lock
 data/*
 !data/.gitkeep
+Scripts
+share
+Include
