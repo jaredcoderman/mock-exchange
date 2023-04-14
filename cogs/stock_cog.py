@@ -20,7 +20,7 @@ stocks = {
 
 async def run_stocks(bot):
   global stocks
-  channel = bot.get_channel(1090713568913146066)
+  #channel = bot.get_channel(1090713568913146066)
   #msg = await channel.send("Loading stocks...")
   for x in range(0, 250):
     for stock in stocks.values():
@@ -171,14 +171,16 @@ class StockCog(commands.Cog):
     msg = f"<@{id}>'s portfolio:\n"
     for stock, data in total_stocks.items():
       original_price = data["value"] / data["shares"]
-      profit = round(original_price - stocks[stock].get_price(False), 2)
+      total_original_value = original_price * data['shares']
+      total_current_value = stocks[stock].get_price(False) * data['shares']
+      profit = round(total_current_value - total_original_value, 2)
       total_profit += profit
       emoji = ""
       if profit > 0:
         emoji = ":green_circle:"
       else:
         emoji = ":red_circle:"
-      msg += f"{data['shares']} {stock.capitalize()}: ${data['value']} Profit: ${profit} {emoji}\n"
+      msg += f"{data['shares']} {stock.capitalize()}: ${round(data['value'], 2)} Profit: ${profit} {emoji}\n"
     total_emoji = ""
     if total_profit > 0:
       total_emoji = ":green_circle:"
@@ -195,7 +197,7 @@ class StockCog(commands.Cog):
     shares, value = bank.get_shares(id, name)
     price = stocks[name].get_price(True)
     total_sell_price = price * int(shares)
-    profit = round((total_sell_price - value), 2)
+    profit = round((total_sell_price - (value)), 2)
     msg = await ctx.send(f"<@{id}> are you sure you want to sell {shares} {stocks[name].name} for a profit of ${profit}")
     await msg.add_reaction("👍")
     await msg.add_reaction("👎")

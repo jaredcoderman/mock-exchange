@@ -8,3 +8,5 @@ data/*
 Scripts
 share
 Include
+bin
+pyvenv.cfg
