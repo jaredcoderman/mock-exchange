@@ -151,7 +151,7 @@ class StockCog(commands.Cog):
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
     shares, value = bank.get_shares(id, name)
-    global stocks
+    global stocks 
     msg = f"<@{id}> has {str(shares)} shares in {name} worth ${str(value)}"
     await ctx.send(msg)
 
