@@ -12,10 +12,10 @@ class BankCog(commands.Cog):
     print("Bank cog online...")
     self.bank = Bank(self.bot)
 
-  #@commands.Cog.listener()
-  #async def on_command_error(self, ctx, error):
-  #  id = str(ctx.author.id)
-  #  await ctx.send(f"<@{id}> {error}")
+  @commands.Cog.listener()
+  async def on_command_error(self, ctx, error):
+   id = str(ctx.author.id)
+   await ctx.send(f"<@{id}> {error}")
 
   @commands.command("daily")
   @commands.cooldown(1, 86400, commands.BucketType.user)
