@@ -134,9 +134,12 @@ class StockCog(commands.Cog):
     global stocks
     stock = stocks[name]
     price = stock.get_price(True)
-    total_price = round(stock.get_price(False) * float(amount), 2)
-    id = str(ctx.author.id)
     bank = self.bot.get_cog("BankCog").bank
+    
+    id = str(ctx.author.id)
+    if amount == "all":
+      amount = bank.get_cash(id) // price
+    total_price = round(stock.get_price(False) * float(amount), 2)
     if bank.get_cash(id) >= total_price:
       bank.change_cash(id, total_price * -1)
       bank.add_certificate(id, name, int(amount), total_price)
