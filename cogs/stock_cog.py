@@ -4,40 +4,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 import asyncio
+import json
 
 from threading import Thread
 from discord.ext import commands
 from classes.stock import Stock
-
-stocks = {
-  "pear": Stock("Pear", 164.54),
-  "macrosoft": Stock("Macrosoft", 285.06),
-  "boblox": Stock("Boblox", 44.83),
-  "alphabit": Stock("Alphabit", 103.36),
-  "franklin": Stock("Franklin", 192.42),
-  "flutter": Stock("Flutter", 10.36)
-}
-
-async def run_stocks(bot):
-  global stocks
-  #channel = bot.get_channel(1090713568913146066)
-  #msg = await channel.send("Loading stocks...")
-  for x in range(0, 250):
-    for stock in stocks.values():
-      stock.get_next_price()
-  while True:
-    for stock in stocks.values():
-      stock.get_next_price()
-    await asyncio.sleep(3)
-    #stock_msg = ""
-    #for stock in stocks.values():
-    #  stock_msg += f"{stock.name}: {round(stock.get_price(), 2)}#\n"
-    #await msg.edit(content=stock_msg)
-    #await msg.pin()
-
-
-def callback(bot):
-  asyncio.run(run_stocks(bot))
 
 def get_image(stock):
   image = discord.File("test.png")
@@ -112,18 +83,27 @@ def get_image(stock):
 class StockCog(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
+    self.stocks = {}
         
+
+  async def run_stocks(self, stocks):
+    while True:
+      for stock in stocks.values():
+        stock.get_next_price()
+      await asyncio.sleep(3)
+
+  def callback(self):
+    asyncio.run(self.run_stocks(self.stocks))
+
   @commands.Cog.listener()
   async def on_ready(self):
     print("Stock cog online...")
-    asyncio.run(callback(self.bot))
     
 
   @commands.command("price")
   async def price(self, ctx, name):
     id = str(ctx.author.id)
-    global stocks
-    stock = stocks[name.lower()]
+    stock = self.stocks[name.lower()]
     price = str(stock.get_price(True))
     msg = f"<@{id}> {stock.name} is valued at ${price} per share"
     image = get_image(stock)
@@ -131,8 +111,7 @@ class StockCog(commands.Cog):
 
   @commands.command("buy")
   async def buy(self, ctx, name, amount):
-    global stocks
-    stock = stocks[name]
+    stock = self.stocks[name]
     price = stock.get_price(True)
     bank = self.bot.get_cog("BankCog").bank
     
@@ -153,20 +132,18 @@ class StockCog(commands.Cog):
   async def shares(self, ctx, name):
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
-    shares, value = bank.get_shares(id, name)
-    global stocks 
+    shares, value = bank.get_shares(id, name) 
     msg = f"<@{id}> has {str(shares)} shares in {name} worth ${str(value)}"
     await ctx.send(msg)
 
   @commands.command("portfolio")
   async def portfolio(self, ctx):
-    global stocks
     total_stocks = {}
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
     total_value = 0
     total_profit = 0
-    for stock in stocks.keys():
+    for stock in self.stocks.keys():
       shares, value = bank.get_shares(id, stock)
       if shares > 0:
         total_stocks[stock] = {"shares": shares, "value": value}
@@ -175,7 +152,7 @@ class StockCog(commands.Cog):
     for stock, data in total_stocks.items():
       original_price = data["value"] / data["shares"]
       total_original_value = original_price * data['shares']
-      total_current_value = stocks[stock].get_price(False) * data['shares']
+      total_current_value = self.stocks[stock].get_price(False) * data['shares']
       profit = round(total_current_value - total_original_value, 2)
       total_profit += profit
       emoji = ""
@@ -194,14 +171,13 @@ class StockCog(commands.Cog):
 
   @commands.command("sell")
   async def sell(self, ctx, name):
-    global stocks
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
     shares, value = bank.get_shares(id, name)
-    price = stocks[name].get_price(True)
+    price = self.stocks[name].get_price(True)
     total_sell_price = price * int(shares)
     profit = round((total_sell_price - (value)), 2)
-    msg = await ctx.send(f"<@{id}> are you sure you want to sell {shares} {stocks[name].name} for a profit of ${profit}")
+    msg = await ctx.send(f"<@{id}> are you sure you want to sell {shares} {self.stocks[name].name} for a profit of ${profit}")
     await msg.add_reaction("👍")
     await msg.add_reaction("👎")
     reaction, user = await self.bot.wait_for(
@@ -214,18 +190,30 @@ class StockCog(commands.Cog):
     if str(reaction) == "👍":
       bank.remove_shares(id, name)
       bank.change_cash(id, total_sell_price)
-      msg = f"<@{id}> sold {shares} shares of {stocks[name].name} for ${round(total_sell_price, 2)} and made ${profit} in profit!"
+      msg = f"<@{id}> sold {shares} shares of {self.stocks[name].name} for ${round(total_sell_price, 2)} and made ${profit} in profit!"
       await ctx.send(msg)
     elif str(reaction) == "👎":
       await ctx.send(f"<@{id}> sale cancelled...")
 
   @commands.command("stocks")
   async def stocks(self, ctx):
-    global stocks
     msg = ""
-    for stock in stocks.values():
+    for stock in self.stocks.values():
       msg += f"{stock.name}: ${stock.get_price(True)}\n"
     await ctx.send(msg)
+
+  @commands.has_any_role("Admin")
+  @commands.command("savestocks")
+  async def savestocks(self, ctx):
+    saved_stocks = {}
+    for stock_name, stock_obj in self.stocks.items():
+      saved_stocks[stock_name] = stock_obj.get_price(False)
+    db = self.bot.get_cog("DBCog").db
+    data = db.get_record()
+    data["stock_prices"] = saved_stocks
+    db.update_data(json.dumps(data))
+    await ctx.send("Saving stocks!")
+
 
 async def setup(bot):
   await bot.add_cog(StockCog(bot))

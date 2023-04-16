@@ -24,6 +24,13 @@ class Database:
     def get_data(self):
         return self.data
 
+    def get_record(self):
+        print(self.data)
+        return self.data["record"]
+
+    def get_saved_stock_prices(self):
+        return self.data["record"]["stock_prices"]
+
     def update_data(self, data):
         headers = {
             "X-Master-Key": self.master_key,

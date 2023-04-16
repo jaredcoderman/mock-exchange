@@ -1,9 +1,11 @@
 import discord
 import json
-
+import asyncio
 from discord.ext import commands
 from pathlib import Path
 from classes.database import Database
+
+from classes.stock import Stock
 
 def get_init_db_data(guilds):
   default_dict = {
@@ -26,6 +28,17 @@ class DBCog(commands.Cog):
   async def on_ready(self):
     print("Database cog online...")
     self.db.init_data()
+    saved_stocks = self.db.get_saved_stock_prices()
+    stock_cog = self.bot.get_cog("StockCog")
+    stock_cog.stocks = {
+      "pear": Stock("Pear", saved_stocks["pear"]),
+      "macrosoft": Stock("Macrosoft", saved_stocks["macrosoft"]),
+      "boblox": Stock("Boblox", saved_stocks["boblox"]),
+      "alphabit": Stock("Alphabit", saved_stocks["alphabit"]),
+      "franklin": Stock("Franklin", saved_stocks["franklin"]),
+      "flutter": Stock("Flutter", saved_stocks["flutter"])
+    }
+    asyncio.run(stock_cog.callback())
     #data = get_init_db_data(self.bot.guilds)
     #self.db.update_data(data)
 
