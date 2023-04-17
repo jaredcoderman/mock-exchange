@@ -40,12 +40,12 @@ class DBCog(commands.Cog):
         "flutter": 10
       }
     stock_cog.stocks = {
-      "pear": Stock("Pear", saved_stocks["pear"]),
-      "macrosoft": Stock("Macrosoft", saved_stocks["macrosoft"]),
-      "boblox": Stock("Boblox", saved_stocks["boblox"] ),
-      "alphabit": Stock("Alphabit", saved_stocks["alphabit"]),
-      "franklin": Stock("Franklin", saved_stocks["franklin"]),
-      "flutter": Stock("Flutter", saved_stocks["flutter"])
+      "pear": Stock("Pear", saved_stocks["pear"], 150),
+      "macrosoft": Stock("Macrosoft", saved_stocks["macrosoft"], 225),
+      "boblox": Stock("Boblox", saved_stocks["boblox"], 50),
+      "alphabit": Stock("Alphabit", saved_stocks["alphabit"], 175),
+      "franklin": Stock("Franklin", saved_stocks["franklin"], 85),
+      "flutter": Stock("Flutter", saved_stocks["flutter"], 10)
     }
     asyncio.run(stock_cog.callback())
     #data = get_init_db_data(self.bot.guilds)

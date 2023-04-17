@@ -116,7 +116,7 @@ class StockCog(commands.Cog):
     while True:
       for stock in self.stocks.values():
         stock.get_next_price()
-      await asyncio.sleep(1)
+      await asyncio.sleep(2)
 
   async def callback(self):
     stocks_task = asyncio.create_task(self.run_stocks())

@@ -1,17 +1,17 @@
 from stock_data import get_stock_data
 
 class Stock:
-  def __init__(self, name, start_price):
+  def __init__(self, name, start_price, initial_price):
     self.name = name
-    self.start_price = start_price
-    self.data = get_stock_data(start_price, start_price)
+    self.initial_price = initial_price
+    self.data = get_stock_data(start_price, initial_price)
     self.previous_prices = []
     self.time_spot = 0
     self.last_price = 0
     self.max_prices = 100
 
   def reset_stock_data(self, price):
-    self.data = get_stock_data(price, self.start_price)
+    self.data = get_stock_data(price, self.initial_price)
     self.time_spot = 0
     price = self.data[self.time_spot]
     return price
