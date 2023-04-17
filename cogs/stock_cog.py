@@ -85,41 +85,43 @@ class StockCog(commands.Cog):
     self.bot = bot
     self.stocks = {}
         
-  def check_alerts(self):
-    """
-      in while loop
-      for each alert
-      check the stock associated with that alert and see if it's price matches
-      alert criteria
+  async def check_alerts(self):
+    # Loop every user's alerts
+    alert_cog = self.bot.get_cog("AlertCog")
+    while True:
+      # Loop through users and their alerts
+      for user_id, alerts_arr in alert_cog.get_users_and_alerts().items():
+        for alert in alerts_arr:
+          user = await self.bot.fetch_user(user_id)
+          # Check all target alerts
+          if alert["alert_type"] == "target":
+            goal_diff = float(alert["value"]) - float(alert["price_when_created"])
+            current_diff = self.stocks[alert["stock"]].get_price(True) - float(alert["price_when_created"])
 
-      alert shape:
-      - user_id
-      - stock
-      - alert_type
-      - value
-      - difference
-
-      if alert_type == 'target':
-        if difference == "higher":
-          if stock.get_price() >= value:
-            alert the user
-        else:
-          if stock.get_price() <= value:
-            alert the user
-      else:
-        get users profit with stock
-        if users profit is value% gr
-    """
-    pass
+            # Check positive target alerts
+            if goal_diff > 0 and current_diff >= goal_diff:
+              alert_cog.remove_alert(user_id, alert["id"])
+              await user.send(f"{alert['alert_type']} Alert: {alert['stock']} hit {alert['value']}")
+  
+            # Check negative target alerts
+            elif goal_diff < 0 and current_diff <= goal_diff:
+              alert_cog.remove_alert(user_id, alert["id"])
+              await user.send(f"{alert['alert_type']} Alert: {alert['stock']} hit {alert['value']}")
+          # Check all profit alerts
+          else:
+            pass
+      await asyncio.sleep(.5)
 
   async def run_stocks(self):
     while True:
       for stock in self.stocks.values():
         stock.get_next_price()
-      await asyncio.sleep(5)
+      await asyncio.sleep(1)
 
-  def callback(self):
-    asyncio.run(self.run_stocks())
+  async def callback(self):
+    stocks_task = asyncio.create_task(self.run_stocks())
+    alerts_task = asyncio.create_task(self.check_alerts())
+    await asyncio.gather(stocks_task, alerts_task)
 
   @commands.Cog.listener()
   async def on_ready(self):
@@ -161,6 +163,12 @@ class StockCog(commands.Cog):
     shares, value = bank.get_shares(id, name) 
     msg = f"<@{id}> has {str(shares)} shares in {name} worth ${str(value)}"
     await ctx.send(msg)
+
+  def get_stock_profit(self, id: str, stock):
+    bank = self.bot.get_cog("BankCog").bank
+    shares, value = bank.get_shares(id, stock)
+    avg_value = shares / value
+    return round(self.stock.get_price(False) - avg_value, 2)
 
   @commands.command("portfolio")
   async def portfolio(self, ctx):
@@ -239,6 +247,11 @@ class StockCog(commands.Cog):
     data["stock_prices"] = saved_stocks
     db.update_data(json.dumps(data))
     await ctx.send("Saving stocks!")
+
+  def is_stock(self, stock: str):
+    if stock in self.stocks.keys():
+      return True
+    return False
 
 
 async def setup(bot):

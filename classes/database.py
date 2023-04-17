@@ -25,7 +25,6 @@ class Database:
         return self.data
 
     def get_record(self):
-        print(self.data)
         return self.data["record"]
 
     def get_saved_stock_prices(self):
@@ -37,6 +36,6 @@ class Database:
             "X-Access-Key": self.access_key,
             "Content-Type": "application/json"
         }
-        response = requests.put(self.url, headers=headers, data=data)
+        requests.put(self.url, headers=headers, data=data)
 
     
