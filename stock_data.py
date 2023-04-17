@@ -4,9 +4,13 @@ import random
 def get_stock_data(start_price, initial_price):
   mult = None
   rand = random.randrange(0, 2) 
-  if rand == 0 or start_price > initial_price * 2:
+  if start_price > initial_price * 2:
     mult = -1
-  elif rand == 1 or start_price < initial_price // 2:
+  elif start_price < initial_price // 2:
+    mult = 1
+  elif rand == 0:
+    mult = -1
+  else:
     mult = 1
   mu = .0005 * mult
   sigma = 0.001
