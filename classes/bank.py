@@ -46,6 +46,8 @@ class Bank:
   def add_certificate(self, id, name, amount, value):
     cert = {"name": name, "amount": amount, "value": value}
     data = get_data(self.db)
+    if not id in data["user_certificates"]:
+      data["user_certificates"][id] = []
     data["user_certificates"][id].append(cert)
     write_to_db(self.db, data)
 

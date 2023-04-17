@@ -85,15 +85,41 @@ class StockCog(commands.Cog):
     self.bot = bot
     self.stocks = {}
         
+  def check_alerts(self):
+    """
+      in while loop
+      for each alert
+      check the stock associated with that alert and see if it's price matches
+      alert criteria
 
-  async def run_stocks(self, stocks):
+      alert shape:
+      - user_id
+      - stock
+      - alert_type
+      - value
+      - difference
+
+      if alert_type == 'target':
+        if difference == "higher":
+          if stock.get_price() >= value:
+            alert the user
+        else:
+          if stock.get_price() <= value:
+            alert the user
+      else:
+        get users profit with stock
+        if users profit is value% gr
+    """
+    pass
+
+  async def run_stocks(self):
     while True:
-      for stock in stocks.values():
+      for stock in self.stocks.values():
         stock.get_next_price()
-      await asyncio.sleep(3)
+      await asyncio.sleep(5)
 
   def callback(self):
-    asyncio.run(self.run_stocks(self.stocks))
+    asyncio.run(self.run_stocks())
 
   @commands.Cog.listener()
   async def on_ready(self):

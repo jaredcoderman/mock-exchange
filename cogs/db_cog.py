@@ -30,10 +30,19 @@ class DBCog(commands.Cog):
     self.db.init_data()
     saved_stocks = self.db.get_saved_stock_prices()
     stock_cog = self.bot.get_cog("StockCog")
+    if len(saved_stocks.keys()) == 0:
+      saved_stocks = {
+        "pear": 150,
+        "macrosoft": 225,
+        "boblox": 50,
+        "alphabit": 175,
+        "franklin": 85,
+        "flutter": 10
+      }
     stock_cog.stocks = {
       "pear": Stock("Pear", saved_stocks["pear"]),
       "macrosoft": Stock("Macrosoft", saved_stocks["macrosoft"]),
-      "boblox": Stock("Boblox", saved_stocks["boblox"]),
+      "boblox": Stock("Boblox", saved_stocks["boblox"] ),
       "alphabit": Stock("Alphabit", saved_stocks["alphabit"]),
       "franklin": Stock("Franklin", saved_stocks["franklin"]),
       "flutter": Stock("Flutter", saved_stocks["flutter"])
