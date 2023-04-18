@@ -12,7 +12,6 @@ class AlertCog(commands.Cog):
   async def on_ready(self):
     print("Alert cog ready...")
 
-
   def get_users_and_alerts(self):
     db = self.bot.get_cog("DBCog").db
     record = db.get_record()
@@ -31,9 +30,7 @@ class AlertCog(commands.Cog):
     record = db.get_record()
     for index, alert in enumerate(record["alerts"][user_id], start=0):
       if alert["id"] == uuid:
-        print(record["alerts"][user_id])
         record["alerts"][user_id].pop(index)
-        print(record["alerts"][user_id])
         db.update_data(json.dumps(record))
         return
 

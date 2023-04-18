@@ -101,16 +101,29 @@ class StockCog(commands.Cog):
             # Check positive target alerts
             if goal_diff > 0 and current_diff >= goal_diff:
               alert_cog.remove_alert(user_id, alert["id"])
-              await user.send(f"{alert['alert_type']} Alert: {alert['stock']} hit {alert['value']}")
+              await user.send(f"{alert['alert_type'].capitalize()} Alert: {alert['stock']} hit {alert['value']}")
   
             # Check negative target alerts
             elif goal_diff < 0 and current_diff <= goal_diff:
               alert_cog.remove_alert(user_id, alert["id"])
-              await user.send(f"{alert['alert_type']} Alert: {alert['stock']} hit {alert['value']}")
+              await user.send(f"{alert['alert_type'].capitalize()} Alert: {alert['stock']} hit {alert['value']}")
           # Check all profit alerts
           else:
-            pass
-      await asyncio.sleep(.5)
+            bank = self.bot.get_cog("BankCog").bank
+            shares, value = bank.get_shares(user_id, alert["stock"])
+            current_price = self.stocks[alert["stock"]].get_price(False)
+            profit = (current_price * shares) - value
+            
+            # Check if profit percent reached
+            if alert["value"][-1] == "%":
+              if (profit / value) * 100 > int(alert["value"][:-1]):
+                alert_cog.remove_alert(user_id, alert["id"])
+                await user.send(f"{alert['alert_type'].capitalize()} Alert: Your Profit for {alert['stock']} hit {alert['value']}")
+            # Check if raw profit reached
+            elif profit >= int(alert["value"]):
+              alert_cog.remove_alert(user_id, alert["id"])
+              await user.send(f"{alert['alert_type'].capitalize()} Alert: Your Profit for {alert['stock']} hit {alert['value']}")
+      await asyncio.sleep(1)
 
   async def run_stocks(self):
     while True:
@@ -163,12 +176,6 @@ class StockCog(commands.Cog):
     shares, value = bank.get_shares(id, name) 
     msg = f"<@{id}> has {str(shares)} shares in {name} worth ${str(value)}"
     await ctx.send(msg)
-
-  def get_stock_profit(self, id: str, stock):
-    bank = self.bot.get_cog("BankCog").bank
-    shares, value = bank.get_shares(id, stock)
-    avg_value = shares / value
-    return round(self.stock.get_price(False) - avg_value, 2)
 
   @commands.command("portfolio")
   async def portfolio(self, ctx):
