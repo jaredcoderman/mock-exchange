@@ -25,11 +25,12 @@ class AlertCog(commands.Cog):
     else:
       return []
 
-  def remove_alert(self, user_id: str, uuid: str):
+  def remove_alert_from_db(self, user_id: str, uuid: str):
     db = self.bot.get_cog("DBCog").db
     record = db.get_record()
     for index, alert in enumerate(record["alerts"][user_id], start=0):
       if alert["id"] == uuid:
+        print("Found")
         record["alerts"][user_id].pop(index)
         db.update_data(json.dumps(record))
         return
@@ -101,6 +102,14 @@ class AlertCog(commands.Cog):
       else:
         msg += f"Alert {index}: {alert['stock'].capitalize()} hitting ${alert['value']} profit\n"
     await ctx.send(msg)
+
+  @commands.command("remove_alert")
+  async def remove_alert(self, ctx, number):
+    print(self, ctx, number)
+    str_id = str(ctx.author.id)
+    alerts = self.get_alerts(str_id)
+    self.remove_alert_from_db(str_id, alerts[int(number)-1]["id"])
+    await ctx.send(f"<@{str_id}> alert removed successfully!")
 
 async def setup(bot):
   await bot.add_cog(AlertCog(bot))

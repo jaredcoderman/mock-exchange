@@ -100,12 +100,12 @@ class StockCog(commands.Cog):
 
             # Check positive target alerts
             if goal_diff > 0 and current_diff >= goal_diff:
-              alert_cog.remove_alert(user_id, alert["id"])
+              alert_cog.remove_alert_from_db(user_id, alert["id"])
               await user.send(f"{alert['alert_type'].capitalize()} Alert: {alert['stock']} hit {alert['value']}")
   
             # Check negative target alerts
             elif goal_diff < 0 and current_diff <= goal_diff:
-              alert_cog.remove_alert(user_id, alert["id"])
+              alert_cog.remove_alert_from_db(user_id, alert["id"])
               await user.send(f"{alert['alert_type'].capitalize()} Alert: {alert['stock']} hit {alert['value']}")
           # Check all profit alerts
           else:
@@ -117,11 +117,11 @@ class StockCog(commands.Cog):
             # Check if profit percent reached
             if alert["value"][-1] == "%":
               if (profit / value) * 100 > int(alert["value"][:-1]):
-                alert_cog.remove_alert(user_id, alert["id"])
+                alert_cog.remove_alert_from_db(user_id, alert["id"])
                 await user.send(f"{alert['alert_type'].capitalize()} Alert: Your Profit for {alert['stock']} hit {alert['value']}")
             # Check if raw profit reached
             elif profit >= int(alert["value"]):
-              alert_cog.remove_alert(user_id, alert["id"])
+              alert_cog.remove_alert_from_db(user_id, alert["id"])
               await user.send(f"{alert['alert_type'].capitalize()} Alert: Your Profit for {alert['stock']} hit {alert['value']}")
       await asyncio.sleep(1)
 
