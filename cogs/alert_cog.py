@@ -90,6 +90,17 @@ class AlertCog(commands.Cog):
     db.update_data(json.dumps(record))
     await ctx.send(f"<@{str_id}> alert added successfully! Type !alerts to view all your alerts")
     
-    
+  @commands.command("alerts")
+  async def alerts(self, ctx):
+    str_id = str(ctx.author.id)
+    alerts = self.get_alerts(str_id)
+    msg = f"<@{str_id}>'s Alerts:\n"
+    for index, alert in enumerate(alerts, start=1):
+      if alert["alert_type"] == "target":
+        msg += f"Alert {index}: {alert['stock'].capitalize()} hitting ${alert['value']}\n"
+      else:
+        msg += f"Alert {index}: {alert['stock'].capitalize()} hitting ${alert['value']} profit\n"
+    await ctx.send(msg)
+
 async def setup(bot):
   await bot.add_cog(AlertCog(bot))

@@ -3,9 +3,6 @@ import os
 import json
 from dotenv import load_dotenv
 
-async def make_request():
-  response = requests.get(url, headers=headers)
-
 class Database:
     def __init__(self):
         self.url = "https://api.jsonbin.io/v3/b/643d7ea6ace6f33a220d18cc"
