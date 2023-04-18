@@ -12,6 +12,7 @@ class BankCog(commands.Cog):
     print("Bank cog online...")
     self.bank = Bank(self.bot)
 
+  # Get daily $1000
   @commands.command("daily")
   @commands.cooldown(1, 86400, commands.BucketType.user)
   async def daily(self, ctx):
@@ -20,7 +21,7 @@ class BankCog(commands.Cog):
     msg = f"<@{id}> claimed their daily reward for $1000"
     await ctx.send(msg)
       
-
+  # Check total balance
   @commands.command("balance")
   async def balance(self, ctx):
     id = str(ctx.author.id)

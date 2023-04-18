@@ -12,11 +12,13 @@ class AlertCog(commands.Cog):
   async def on_ready(self):
     print("Alert cog ready...")
 
+  # Get array of users and their alerts
   def get_users_and_alerts(self):
     db = self.bot.get_cog("DBCog").db
     record = db.get_record()
     return record["alerts"]
 
+  # Get alerts for a specific user
   def get_alerts(self, id: str):
     db = self.bot.get_cog("DBCog").db
     record = db.get_record()
@@ -25,6 +27,7 @@ class AlertCog(commands.Cog):
     else:
       return []
 
+  # Remove an alert given a user_id and alert id
   def remove_alert_from_db(self, user_id: str, uuid: str):
     db = self.bot.get_cog("DBCog").db
     record = db.get_record()
@@ -91,6 +94,7 @@ class AlertCog(commands.Cog):
     db.update_data(json.dumps(record))
     await ctx.send(f"<@{str_id}> alert added successfully! Type !alerts to view all your alerts")
     
+  # Send a msg that displays user's alerts so they can remove them or remember
   @commands.command("alerts")
   async def alerts(self, ctx):
     str_id = str(ctx.author.id)
@@ -103,6 +107,7 @@ class AlertCog(commands.Cog):
         msg += f"Alert {index}: {alert['stock'].capitalize()} hitting ${alert['value']} profit\n"
     await ctx.send(msg)
 
+  # Command to remove an alert given a number which can be found from !alerts
   @commands.command("remove_alert")
   async def remove_alert(self, ctx, number):
     print(self, ctx, number)

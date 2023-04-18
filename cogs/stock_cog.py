@@ -1,5 +1,4 @@
 import discord
-import time
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
@@ -42,10 +41,6 @@ def get_image(stock):
   prices = np.array(prices)
   changes = prices[1:] - prices[:-1]
 
-  # create a mask for positive and negative changes
-  mask_up = changes >= 0
-  mask_down = changes < 0
-
   # plot the last price with a different color and marker style
   if changes[-1] >= 0:
       plt.scatter(len(prices)-1, prices[-1], s=50, marker='^', c='g', label=f"Current Share Price: ${last_price}")
@@ -64,7 +59,7 @@ def get_image(stock):
   formatter = ticker.FuncFormatter(currency_fmt)
   ax.yaxis.set_major_formatter(formatter)
 
-  #font
+  # Set Fonts
   plt.rcParams['font.family'] = 'Courier New'
   plt.rcParams['font.weight'] = "bold"
   for tick in ax.get_xticklabels():
@@ -84,7 +79,8 @@ class StockCog(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
     self.stocks = {}
-        
+  
+  # Constantly checks stock prices and alerts to notify users
   async def check_alerts(self):
     # Loop every user's alerts
     alert_cog = self.bot.get_cog("AlertCog")
@@ -125,12 +121,14 @@ class StockCog(commands.Cog):
               await user.send(f"{alert['alert_type'].capitalize()} Alert: Your Profit for {alert['stock']} hit {alert['value']}")
       await asyncio.sleep(1)
 
+  # Starts the stock price changges
   async def run_stocks(self):
     while True:
       for stock in self.stocks.values():
         stock.get_next_price()
       await asyncio.sleep(2)
 
+  # Runs asynchronous functions
   async def callback(self):
     stocks_task = asyncio.create_task(self.run_stocks())
     alerts_task = asyncio.create_task(self.check_alerts())
@@ -140,7 +138,7 @@ class StockCog(commands.Cog):
   async def on_ready(self):
     print("Stock cog online...")
     
-
+  # Checks the price of a stock
   @commands.command("price")
   async def price(self, ctx, name):
     id = str(ctx.author.id)
@@ -150,6 +148,7 @@ class StockCog(commands.Cog):
     image = get_image(stock)
     await ctx.send(msg, file=image)
 
+  # Purchase a stock with a number of shares
   @commands.command("buy")
   async def buy(self, ctx, name, amount):
     stock = self.stocks[name]
@@ -169,6 +168,7 @@ class StockCog(commands.Cog):
     else:
       await ctx.send(f"<@{id}> not enough money. Total price is ${total_price}, you have ${str(bank.get_cash(id))}")
 
+  # Check your shares with a given stock
   @commands.command("shares")
   async def shares(self, ctx, name):
     bank = self.bot.get_cog("BankCog").bank
@@ -177,19 +177,28 @@ class StockCog(commands.Cog):
     msg = f"<@{id}> has {str(shares)} shares in {name} worth ${str(value)}"
     await ctx.send(msg)
 
+  # Check your stock portfolio
   @commands.command("portfolio")
   async def portfolio(self, ctx):
+
+    # Setup necessary variables
     total_stocks = {}
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
     total_value = 0
     total_profit = 0
+
+    # Create a dict storing total shares and total value for every stock a user owns
     for stock in self.stocks.keys():
       shares, value = bank.get_shares(id, stock)
       if shares > 0:
         total_stocks[stock] = {"shares": shares, "value": value}
         total_value += value
+
+    # Create the message to send to the user
     msg = f"<@{id}>'s portfolio:\n"
+
+    # For each stock, depending on its profitability, label it with a green circle or red circle 
     for stock, data in total_stocks.items():
       original_price = data["value"] / data["shares"]
       total_original_value = original_price * data['shares']
@@ -210,17 +219,23 @@ class StockCog(commands.Cog):
     msg += f"Total Worth: ${round(total_value, 2)} Total Profit: ${round(total_profit, 2)} {total_emoji}"
     await ctx.send(msg)
 
+  # Sell a stock
   @commands.command("sell")
   async def sell(self, ctx, name):
+    # Get data for the message and functionality
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
     shares, value = bank.get_shares(id, name)
     price = self.stocks[name].get_price(True)
     total_sell_price = price * int(shares)
     profit = round((total_sell_price - (value)), 2)
+
+    # Prompt the user
     msg = await ctx.send(f"<@{id}> are you sure you want to sell {shares} {self.stocks[name].name} for a profit of ${profit}")
     await msg.add_reaction("👍")
     await msg.add_reaction("👎")
+
+    # Wait for user reaction to confirm or deny sale
     reaction, user = await self.bot.wait_for(
       "reaction_add",
       check=lambda reaction, user: reaction.message.id == msg.id
@@ -228,6 +243,8 @@ class StockCog(commands.Cog):
       and reaction.emoji == "👍" or reaction.emoji == "👎",
       timeout=None,
     )
+
+    # Make the sale happen or cancel depending on reaction
     if str(reaction) == "👍":
       bank.remove_shares(id, name)
       bank.change_cash(id, total_sell_price)
@@ -236,6 +253,7 @@ class StockCog(commands.Cog):
     elif str(reaction) == "👎":
       await ctx.send(f"<@{id}> sale cancelled...")
 
+  # Get a list of stocks and their prices, along with their initial price
   @commands.command("stocks")
   async def stocks(self, ctx):
     msg = ""
@@ -243,6 +261,7 @@ class StockCog(commands.Cog):
       msg += f"{stock.name}: ${stock.get_price(True)}, Initial Price: ${stock.initial_price}\n"
     await ctx.send(msg)
 
+  # Save stocks so that stock prices are the same after deployment
   @commands.has_any_role("Admin")
   @commands.command("savestocks")
   async def savestocks(self, ctx):
@@ -255,6 +274,7 @@ class StockCog(commands.Cog):
     db.update_data(json.dumps(data))
     await ctx.send("Saving stocks!")
 
+  # Check if a string is a stock
   def is_stock(self, stock: str):
     if stock in self.stocks.keys():
       return True

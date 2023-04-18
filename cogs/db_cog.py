@@ -1,22 +1,9 @@
 import discord
-import json
 import asyncio
 from discord.ext import commands
-from pathlib import Path
 from classes.database import Database
 
 from classes.stock import Stock
-
-def get_init_db_data(guilds):
-  default_dict = {
-    "user_money": {},
-    "user_certificates": {}
-  }
-  for guild in guilds:
-    for member in guild.members:
-      default_dict["user_money"][str(member.id)] = 0
-      default_dict["user_certificates"][str(member.id)] = []
-  return json.dumps(default_dict)
 
 class DBCog(commands.Cog):
   def __init__(self, bot):
@@ -47,9 +34,9 @@ class DBCog(commands.Cog):
       "franklin": Stock("Franklin", saved_stocks["franklin"], 85),
       "flutter": Stock("Flutter", saved_stocks["flutter"], 10)
     }
+    
+    # Now that DBCog is setup, stocks can start running and update prices in db
     asyncio.run(stock_cog.callback())
-    #data = get_init_db_data(self.bot.guilds)
-    #self.db.update_data(data)
 
 
 async def setup(bot):

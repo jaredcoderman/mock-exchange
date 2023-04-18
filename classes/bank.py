@@ -1,13 +1,7 @@
 import json
 
-from classes.database import Database
-
 def get_data(db):
-  data = db.get_data()
   return db.get_data()["record"]
-
-def write_to_db(db, data):
-  db.update_data(json.dumps(data))
 
 class Bank:
   def __init__(self, bot):
@@ -30,7 +24,7 @@ class Bank:
       data["user_money"][id] += amt
     else:
       data["user_money"][id] = amt
-    write_to_db(self.db, data)
+    db.update_data(json.dumps(data))
 
   def get_shares(self, id, stock):
     id = str(id)
@@ -49,7 +43,7 @@ class Bank:
     if not id in data["user_certificates"]:
       data["user_certificates"][id] = []
     data["user_certificates"][id].append(cert)
-    write_to_db(self.db, data)
+    self.db.update_data(json.dumps(data))
 
   def remove_shares(self, id, name):
     i = 0
@@ -61,4 +55,4 @@ class Bank:
           i -= 1
       else:
         i += 1
-    write_to_db(self.db, data)
+    self.db.update_data(json.dumps(data))
