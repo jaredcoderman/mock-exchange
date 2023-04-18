@@ -240,7 +240,7 @@ class StockCog(commands.Cog):
   async def stocks(self, ctx):
     msg = ""
     for stock in self.stocks.values():
-      msg += f"{stock.name}: ${stock.get_price(True)}\n"
+      msg += f"{stock.name}: ${stock.get_price(True)}, Initial Price: ${stock.initial_price}\n"
     await ctx.send(msg)
 
   @commands.has_any_role("Admin")

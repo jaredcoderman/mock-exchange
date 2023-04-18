@@ -4,7 +4,7 @@ import random
 def get_stock_data(start_price, initial_price):
   mult = None
   rand = random.randrange(0, 2) 
-  if start_price > initial_price * 2:
+  if start_price > initial_price * 10:
     mult = -1
   elif start_price < initial_price // 2:
     mult = 1
