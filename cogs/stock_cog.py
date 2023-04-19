@@ -177,29 +177,52 @@ class StockCog(commands.Cog):
     msg = f"<@{id}> has {str(shares)} shares in {name} worth ${str(value)}"
     await ctx.send(msg)
 
-  # Check your stock portfolio
-  @commands.command("portfolio")
-  async def portfolio(self, ctx):
-
-    # Setup necessary variables
+  def get_share_value_dict_for_stock(self, user_id: str):
     total_stocks = {}
     bank = self.bot.get_cog("BankCog").bank
-    id = str(ctx.author.id)
     total_value = 0
-    total_profit = 0
-
-    # Create a dict storing total shares and total value for every stock a user owns
     for stock in self.stocks.keys():
-      shares, value = bank.get_shares(id, stock)
+      shares, value = bank.get_shares(user_id, stock)
       if shares > 0:
         total_stocks[stock] = {"shares": shares, "value": value}
         total_value += value
+    total_stocks["total_value"] = total_value
+    return total_stocks
+
+  # Get portfolio value
+  def get_portfolio_value(self, user_id: str):
+    total_profit = 0
+    total_stocks = self.get_share_value_dict_for_stock(user_id)
+    for stock, data in total_stocks.items():
+      original_price = data["value"] / data["shares"]
+      total_original_value = original_price * data['shares']
+      total_current_value = self.stocks[stock].get_price(False) * data['shares']
+      profit = round(total_current_value - total_original_value, 2)
+      total_profit += profit
+    return total_profit
+
+  # Check your stock portfolio
+  @commands.command("portfolio")
+  async def portfolio(self, ctx, user_id=None):
+    display_name = str(ctx.author.name)
+    id = str(ctx.author.id)
+    if user_id != None:
+      id = user_id[2:-1]
+      user_obj = await self.bot.fetch_user(id)
+      display_name = user_obj.display_name
+
+    # Setup necessary variables
+
+    total_stocks = self.get_share_value_dict_for_stock(id)
+    total_profit = 0
 
     # Create the message to send to the user
-    msg = f"<@{id}>'s portfolio:\n"
+    msg = f"<@{str(ctx.author.id)}>\n{display_name}'s' portfolio:\n"
 
     # For each stock, depending on its profitability, label it with a green circle or red circle 
     for stock, data in total_stocks.items():
+      if stock == "total_value":
+        continue
       original_price = data["value"] / data["shares"]
       total_original_value = original_price * data['shares']
       total_current_value = self.stocks[stock].get_price(False) * data['shares']
@@ -216,7 +239,7 @@ class StockCog(commands.Cog):
       total_emoji = ":green_circle:"
     else:
       total_emoji = ":red_circle:"
-    msg += f"Total Worth: ${round(total_value, 2)} Total Profit: ${round(total_profit, 2)} {total_emoji}"
+    msg += f"Total Worth: ${round(total_stocks['total_value'], 2)} Total Profit: ${round(total_profit, 2)} {total_emoji}"
     await ctx.send(msg)
 
   # Sell a stock

@@ -24,11 +24,15 @@ class Bank:
       data["user_money"][id] += amt
     else:
       data["user_money"][id] = amt
-    db.update_data(json.dumps(data))
+    self.db.update_data(json.dumps(data))
 
   def get_shares(self, id, stock):
     id = str(id)
-    portfolio = get_data(self.db)["user_certificates"][id]
+    portfolio = {}
+    if id in get_data(self.db)["user_certificates"]:
+      portfolio = get_data(self.db)["user_certificates"][id]
+    else:
+      return 0, 0
     shares = 0
     value = 0
     for cert in portfolio:
