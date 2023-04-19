@@ -23,10 +23,14 @@ class BankCog(commands.Cog):
       
   # Check total balance
   @commands.command("balance")
-  async def balance(self, ctx):
+  async def balance(self, ctx, user_id=None):
     id = str(ctx.author.id)
-    amt = str(round(self.bank.get_cash(id), 2))
-    msg = f"<@{id}> has ${amt}"
+    display_name = str(ctx.author.name)
+    if user_id != None:
+      user_obj = await self.bot.fetch_user(user_id[2:-1])
+      display_name = user_obj.display_name
+    amt = str(round(self.bank.get_cash(user_id[2:-1]), 2))
+    msg = f"<@{id}>\n{display_name} has ${amt}"
     await ctx.send(msg)
     
 

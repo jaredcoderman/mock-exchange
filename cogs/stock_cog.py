@@ -152,7 +152,7 @@ class StockCog(commands.Cog):
   @commands.command("buy")
   async def buy(self, ctx, name, amount):
     stock = self.stocks[name]
-    price = stock.get_price(True)
+    price = stock.get_price(False)
     bank = self.bot.get_cog("BankCog").bank
     
     id = str(ctx.author.id)
@@ -204,15 +204,14 @@ class StockCog(commands.Cog):
   # Check your stock portfolio
   @commands.command("portfolio")
   async def portfolio(self, ctx, user_id=None):
+    
+    # Setup necessary variables
     display_name = str(ctx.author.name)
     id = str(ctx.author.id)
     if user_id != None:
       id = user_id[2:-1]
       user_obj = await self.bot.fetch_user(id)
       display_name = user_obj.display_name
-
-    # Setup necessary variables
-
     total_stocks = self.get_share_value_dict_for_stock(id)
     total_profit = 0
 
