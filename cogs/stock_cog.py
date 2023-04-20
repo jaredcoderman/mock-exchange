@@ -158,7 +158,11 @@ class StockCog(commands.Cog):
     id = str(ctx.author.id)
     if amount == "all":
       amount = bank.get_cash(id) // price
+    elif amount[-1] == "%":
+      amount = (int(amount[:-1]) / 100 * bank.get_cash(id)) // price
     total_price = round(stock.get_price(False) * float(amount), 2)
+
+
     if bank.get_cash(id) >= total_price:
       bank.change_cash(id, total_price * -1)
       bank.add_certificate(id, name, int(amount), total_price)
@@ -204,7 +208,7 @@ class StockCog(commands.Cog):
   # Check your stock portfolio
   @commands.command("portfolio")
   async def portfolio(self, ctx, user_id=None):
-    
+
     # Setup necessary variables
     display_name = str(ctx.author.name)
     id = str(ctx.author.id)
