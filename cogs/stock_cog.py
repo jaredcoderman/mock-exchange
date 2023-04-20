@@ -208,10 +208,10 @@ class StockCog(commands.Cog):
   # Check your stock portfolio
   @commands.command("portfolio")
   async def portfolio(self, ctx, user_id=None):
-
     # Setup necessary variables
     display_name = str(ctx.author.name)
     id = str(ctx.author.id)
+    user_obj = await self.bot.fetch_user(str(ctx.author.id))
     if user_id != None:
       id = user_id[2:-1]
       user_obj = await self.bot.fetch_user(id)
@@ -220,8 +220,10 @@ class StockCog(commands.Cog):
     total_profit = 0
 
     # Create the message to send to the user
-    msg = f"<@{str(ctx.author.id)}>\n{display_name}'s' portfolio:\n"
-
+    embed = discord.Embed(
+      colour= discord.Colour.brand_green(),
+      title= f"{display_name}'s portfolio",
+    )
     # For each stock, depending on its profitability, label it with a green circle or red circle 
     for stock, data in total_stocks.items():
       if stock == "total_value":
@@ -236,14 +238,22 @@ class StockCog(commands.Cog):
         emoji = ":green_circle:"
       else:
         emoji = ":red_circle:"
-      msg += f"{data['shares']} {stock.capitalize()}: ${round(data['value'], 2)} Profit: ${profit} {emoji}\n"
+      embed.add_field(name=f"{data['shares']} {stock.capitalize()}", value=f"${round(data['value'], 2)} Profit: ${profit} {emoji}")
     total_emoji = ""
     if total_profit > 0:
       total_emoji = ":green_circle:"
     else:
       total_emoji = ":red_circle:"
-    msg += f"Total Worth: ${round(total_stocks['total_value'], 2)} Total Profit: ${round(total_profit, 2)} {total_emoji}"
-    await ctx.send(msg)
+    msg = f"Value: ${round(total_stocks['total_value'], 2)} | Profit: ${round(total_profit, 2)} {total_emoji}"
+    # embed = discord.Embed(
+    #   colour= discord.Colour.brand_green(),
+    #   title= f"{display_name}'s portfolio",
+    #   description={msg}
+    # )
+
+    embed.description = msg
+    embed.set_thumbnail(url=user_obj.display_avatar)
+    await ctx.send(embed=embed)
 
   # Sell a stock
   @commands.command("sell")
