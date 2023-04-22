@@ -4,6 +4,7 @@ import asyncio
 import nest_asyncio
 import json
 
+from commands.my_help import MyHelp
 from classes.database import Database
 from dotenv import load_dotenv
 
@@ -22,7 +23,7 @@ help_command = commands.DefaultHelpCommand(no_category='Commands')
 
 bot = commands.Bot(command_prefix="!",
                       intents=intents,
-                      help_command=help_command)
+                      help_command=MyHelp())
 
 async def load():
   for filename in os.listdir("./cogs"):
