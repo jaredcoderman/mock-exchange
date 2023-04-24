@@ -12,7 +12,7 @@ class MyHelp(commands.HelpCommand):
         """
         filtered = await self.filter_commands(self.context.bot.commands, sort=True) # returns a list of command objects
         names = [command.name for command in filtered] # iterating through the commands objects getting names
-        available_commands = "-- Commands --\n" # joining the list of names by a new line)
+        available_commands = "" # joining the list of names by a new line)
         for command in filtered:
             command_str = f"!{command.name}"
             for parameter in command.clean_params.keys():
@@ -20,7 +20,7 @@ class MyHelp(commands.HelpCommand):
                 command_str += f" [{parameter}]"
             available_commands += command_str + "\n"
           
-        embed  = discord.Embed(description=available_commands)
+        embed  = discord.Embed(description=available_commands, title="Commands")
         await self.context.send(embed=embed)
 
     async def send_command_help(self, command):

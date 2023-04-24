@@ -193,18 +193,6 @@ class StockCog(commands.Cog):
     total_stocks["total_value"] = total_value
     return total_stocks
 
-  # Get portfolio value
-  def get_portfolio_value(self, user_id: str):
-    total_profit = 0
-    total_stocks = self.get_share_value_dict_for_stock(user_id)
-    for stock, data in total_stocks.items():
-      original_price = data["value"] / data["shares"]
-      total_original_value = original_price * data['shares']
-      total_current_value = self.stocks[stock].get_price(False) * data['shares']
-      profit = round(total_current_value - total_original_value, 2)
-      total_profit += profit
-    return total_profit
-
   # Check your stock portfolio
   @commands.command("portfolio")
   async def portfolio(self, ctx, user_id=None):

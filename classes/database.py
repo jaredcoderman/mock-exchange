@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 class Database:
     def __init__(self):
         get_url = lambda testing: "https://api.jsonbin.io/v3/b/643d7ea6ace6f33a220d18cc" if testing else "https://api.jsonbin.io/v3/b/6430d9c8c0e7653a059fe6c5"
-        self.url = get_url(True)
+        self.url = get_url(False)
         self.master_key = os.getenv("X-MASTER-KEY")
         self.access_key = os.getenv("X-ACCESS-KEY")
         self.data = {}
