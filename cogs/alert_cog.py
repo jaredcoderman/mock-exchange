@@ -39,7 +39,7 @@ class AlertCog(commands.Cog):
         return
 
   @commands.command("alert")
-  async def alert(self, ctx, stock, alert_type, value):
+  async def alert(self, ctx, stock_name, alert_type, value):
     # Check if they have max alerts
     str_id = str(ctx.author.id)
     alerts = self.get_alerts(str_id)
@@ -49,8 +49,8 @@ class AlertCog(commands.Cog):
 
     # Check if stock exists
     stock_cog = self.bot.get_cog("StockCog")
-    if not stock_cog.is_stock(stock):
-      await ctx.send(f"Error: <@{str_id}> {stock} is not a stock! Use !stocks to see a list")
+    if not stock_cog.is_stock(stock_name):
+      await ctx.send(f"Error: <@{str_id}> {stock_name} is not a stock! Use !stocks to see a list")
       return
 
     # Check if alert_type is target or profit
@@ -61,7 +61,7 @@ class AlertCog(commands.Cog):
     # Create alert dict
     alert_dict = {
       "id": str(uuid.uuid4()),
-      "stock": stock,
+      "stock": stock_name,
       "alert_type": alert_type
     }
 
@@ -69,7 +69,7 @@ class AlertCog(commands.Cog):
     if alert_type == "target":
       if value.isnumeric(): 
         alert_dict["value"] = value
-        alert_dict["price_when_created"] = stock_cog.stocks[stock].get_price(True)
+        alert_dict["price_when_created"] = stock_cog.stocks[stock_name].get_price(True)
       else:
         await ctx.send(f"Error: <@{str_id}> {value} is not a valid alert value, it must be only numbers when using 'target'")
         return

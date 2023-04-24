@@ -123,6 +123,7 @@ class StockCog(commands.Cog):
 
   # Starts the stock price changges
   async def run_stocks(self):
+
     while True:
       for stock in self.stocks.values():
         stock.get_next_price()
@@ -140,18 +141,18 @@ class StockCog(commands.Cog):
     
   # Checks the price of a stock
   @commands.command("price")
-  async def price(self, ctx, name):
+  async def price(self, ctx, stock_name):
     id = str(ctx.author.id)
-    stock = self.stocks[name.lower()]
+    stock = self.stocks[stock_name.lower()]
     price = str(stock.get_price(True))
-    msg = f"<@{id}> {stock.name} is valued at ${price} per share"
+    msg = f"<@{id}> {stock.stock_name} is valued at ${price} per share"
     image = get_image(stock)
     await ctx.send(msg, file=image)
 
   # Purchase a stock with a number of shares
   @commands.command("buy")
-  async def buy(self, ctx, name, amount):
-    stock = self.stocks[name]
+  async def buy(self, ctx, stock_name, amount):
+    stock = self.stocks[stock_name]
     price = stock.get_price(False)
     bank = self.bot.get_cog("BankCog").bank
     
@@ -165,20 +166,20 @@ class StockCog(commands.Cog):
 
     if bank.get_cash(id) >= total_price:
       bank.change_cash(id, total_price * -1)
-      bank.add_certificate(id, name, int(amount), total_price)
-      shares, value = bank.get_shares(id, name)
-      msg = f"<@{id}> purchased {amount} shares of {stock.name} for ${total_price} at ${price} per share. You now have {str(shares)} shares"
+      bank.add_certificate(id, stock_name, int(amount), total_price)
+      shares, value = bank.get_shares(id, stock_name)
+      msg = f"<@{id}> purchased {amount} shares of {stock.stock_name} for ${total_price} at ${price} per share. You now have {str(shares)} shares"
       await ctx.send(msg)
     else:
       await ctx.send(f"<@{id}> not enough money. Total price is ${total_price}, you have ${str(bank.get_cash(id))}")
 
   # Check your shares with a given stock
   @commands.command("shares")
-  async def shares(self, ctx, name):
+  async def shares(self, ctx, stock_name):
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
-    shares, value = bank.get_shares(id, name) 
-    msg = f"<@{id}> has {str(shares)} shares in {name} worth ${str(value)}"
+    shares, value = bank.get_shares(id, stock_name) 
+    msg = f"<@{id}> has {str(shares)} shares in {stock_name} worth ${str(value)}"
     await ctx.send(msg)
 
   def get_share_value_dict_for_stock(self, user_id: str):
@@ -195,13 +196,13 @@ class StockCog(commands.Cog):
 
   # Check your stock portfolio
   @commands.command("portfolio")
-  async def portfolio(self, ctx, user_id=None):
+  async def portfolio(self, ctx, user_at=None):
     # Setup necessary variables
     display_name = str(ctx.author.name)
     id = str(ctx.author.id)
     user_obj = await self.bot.fetch_user(str(ctx.author.id))
-    if user_id != None:
-      id = user_id[2:-1]
+    if user_at != None:
+      id = user_at[2:-1]
       user_obj = await self.bot.fetch_user(id)
       display_name = user_obj.display_name
     total_stocks = self.get_share_value_dict_for_stock(id)
@@ -245,17 +246,17 @@ class StockCog(commands.Cog):
 
   # Sell a stock
   @commands.command("sell")
-  async def sell(self, ctx, name):
+  async def sell(self, ctx, stock_name):
     # Get data for the message and functionality
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
-    shares, value = bank.get_shares(id, name)
-    price = self.stocks[name].get_price(True)
+    shares, value = bank.get_shares(id, stock_name)
+    price = self.stocks[stock_name].get_price(True)
     total_sell_price = price * int(shares)
     profit = round((total_sell_price - (value)), 2)
 
     # Prompt the user
-    msg = await ctx.send(f"<@{id}> are you sure you want to sell {shares} {self.stocks[name].name} for a profit of ${profit}")
+    msg = await ctx.send(f"<@{id}> are you sure you want to sell {shares} {self.stocks[stock_name].name} for a profit of ${profit}")
     await msg.add_reaction("👍")
     await msg.add_reaction("👎")
 
