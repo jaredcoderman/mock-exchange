@@ -59,7 +59,20 @@ class BankCog(commands.Cog):
     embed.add_field(name="Balance", value=f"${round(balance, 2)}")
     embed.add_field(name="Portfolio", value=f"${round(portfolio_value, 2)}")
     await ctx.send(embed=embed)
+
+  @commands.command("donate")
+  async def donate(self, ctx, user_at, amt):
+    donor = str(ctx.author.id)
+    donee = user_at[2:-1]
+    amt = int(amt)
+    # Check donor has amount they are donating
+    if self.bank.get_cash(donor) < amt:
+      await ctx.send(f"<@{donor}> You can't donate more money than you have!")
     
+    # Remove amount from donor and add amount to donee
+    self.bank.change_cash(donor, amt * -1)
+    self.bank.change_cash(donee, amt)
+    await ctx.send(f"<@{donor}> donated ${amt} to <@{donee}>")
       
     
 
