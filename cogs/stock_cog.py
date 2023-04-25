@@ -124,9 +124,40 @@ class StockCog(commands.Cog):
   # Starts the stock price changges
   async def run_stocks(self):
     count = 0
+    general_channels = []
+    pins_to_update = []
+
+    # Get all general channels
+    for guild in self.bot.guilds:
+      for channel in guild.text_channels:
+        if channel.name == "general":
+          general_channels.append(channel)
+
+    # Get pinned channels and created pins to update
+    for channel in general_channels:
+        pins = await channel.pins()
+        if len(pins) > 0:
+          pins_to_update.append(pins[0])
+        else:
+          msg="**Stock Prices**\n"
+          for stock_name, stock in self.stocks.items():
+            msg += f"{stock_name}: ${stock.get_price(True)}\n"
+          message = await channel.send(msg)
+          await message.pin()
+          pins_to_update.append(message)
+
     while True:
+      # Update stock prices
       for stock in self.stocks.values():
         stock.get_next_price()
+
+      # Update pins
+      for pin in pins_to_update:
+        msg="**Stock Prices**\n"
+        for stock_name, stock in self.stocks.items():
+          msg += f"{stock_name}: ${stock.get_price(True)}\n"
+        await pin.edit(content=msg)
+
       count += 1
       if count == 100:
         count = 0
