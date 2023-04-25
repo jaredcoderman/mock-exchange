@@ -123,10 +123,14 @@ class StockCog(commands.Cog):
 
   # Starts the stock price changges
   async def run_stocks(self):
-
+    count = 0
     while True:
       for stock in self.stocks.values():
         stock.get_next_price()
+      count += 1
+      if count == 100:
+        count = 0
+        await self.save_stocks()
       await asyncio.sleep(2)
 
   # Runs asynchronous functions
@@ -286,10 +290,7 @@ class StockCog(commands.Cog):
       msg += f"{stock.name}: ${stock.get_price(True)}, Initial Price: ${stock.initial_price}\n"
     await ctx.send(msg)
 
-  # Save stocks so that stock prices are the same after deployment
-  @commands.has_any_role("Admin")
-  @commands.command("savestocks")
-  async def savestocks(self, ctx):
+  async def save_stocks(self):
     saved_stocks = {}
     for stock_name, stock_obj in self.stocks.items():
       saved_stocks[stock_name] = stock_obj.get_price(False)
@@ -297,6 +298,13 @@ class StockCog(commands.Cog):
     data = db.get_record()
     data["stock_prices"] = saved_stocks
     db.update_data(json.dumps(data))
+    print("Saving stocks...")
+
+  # Save stocks so that stock prices are the same after deployment
+  @commands.has_any_role("Admin")
+  @commands.command("savestocks")
+  async def savestocks(self, ctx):
+    await self.save_stocks()
     await ctx.send("Saving stocks!")
 
   # Check if a string is a stock
