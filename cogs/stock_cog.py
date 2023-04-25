@@ -271,9 +271,9 @@ class StockCog(commands.Cog):
 
     # Make the sale happen or cancel depending on reaction
     if str(reaction) == "👍":
-      bank.remove_shares(id, name)
+      bank.remove_shares(id, stock_name)
       bank.change_cash(id, total_sell_price)
-      msg = f"<@{id}> sold {shares} shares of {self.stocks[name].name} for ${round(total_sell_price, 2)} and made ${profit} in profit!"
+      msg = f"<@{id}> sold {shares} shares of {self.stocks[stock_name].name} for ${round(total_sell_price, 2)} and made ${profit} in profit!"
       await ctx.send(msg)
     elif str(reaction) == "👎":
       await ctx.send(f"<@{id}> sale cancelled...")
