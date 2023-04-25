@@ -172,7 +172,7 @@ class StockCog(commands.Cog):
       bank.change_cash(id, total_price * -1)
       bank.add_certificate(id, stock_name, int(amount), total_price)
       shares, value = bank.get_shares(id, stock_name)
-      msg = f"<@{id}> purchased {amount} shares of {stock.stock_name} for ${total_price} at ${price} per share. You now have {str(shares)} shares"
+      msg = f"<@{id}> purchased {amount} shares of {stock.name} for ${total_price} at ${price} per share. You now have {str(shares)} shares"
       await ctx.send(msg)
     else:
       await ctx.send(f"<@{id}> not enough money. Total price is ${total_price}, you have ${str(bank.get_cash(id))}")
