@@ -122,6 +122,20 @@ class StockCog(commands.Cog):
       await asyncio.sleep(1)
 
   # Starts the stock price changges
+
+  def get_above_initial_price_emoji(self, stock):
+    if stock.get_price(False) > stock.initial_price:
+      return ":green_circle:"
+    return ":red_circle:"
+    
+  def get_trending_emoji(self, stock):
+    if len(stock.get_previous_prices()) < 76:
+      return ""
+    if stock.get_previous_prices()[75] < stock.get_previous_prices()[-1]:
+      return ":chart_with_upwards_trend:"
+    return ":chart_with_downwards_trend:"
+
+
   async def run_stocks(self):
     count = 0
     general_channels = []
@@ -141,28 +155,35 @@ class StockCog(commands.Cog):
         else:
           msg="**Stock Prices**\n"
           for stock_name, stock in self.stocks.items():
-            msg += f"{stock_name}: ${stock.get_price(True)}\n"
+            emoji = self.get_above_initial_price_emoji(stock)
+            print(emoji)
+            msg += f"{stock_name}: ${stock.get_price(True)} {emoji}\n"
           message = await channel.send(msg)
           await message.pin()
           pins_to_update.append(message)
 
+    pin_count = 0
     while True:
       # Update stock prices
       for stock in self.stocks.values():
         stock.get_next_price()
 
       # Update pins
-      for pin in pins_to_update:
-        msg="**Stock Prices**\n"
-        for stock_name, stock in self.stocks.items():
-          msg += f"{stock_name}: ${stock.get_price(True)}\n"
-        await pin.edit(content=msg)
+      if pin_count == 5:
+        pin_count = 0
+        for pin in pins_to_update:
+          msg="**Stock Prices**\n"
+          for stock_name, stock in self.stocks.items():
+            msg += f"{stock_name}: ${stock.get_price(True)} {self.get_above_initial_price_emoji(stock)} {self.get_trending_emoji(stock)}\n"
+          await pin.edit(content=msg)
+      else:
+        pin_count += 1
 
       count += 1
       if count == 100:
         count = 0
         await self.save_stocks()
-      await asyncio.sleep(2)
+      await asyncio.sleep(.5)
 
   # Runs asynchronous functions
   async def callback(self):
@@ -180,7 +201,7 @@ class StockCog(commands.Cog):
     id = str(ctx.author.id)
     stock = self.stocks[stock_name.lower()]
     price = str(stock.get_price(True))
-    msg = f"<@{id}> {stock.stock_name} is valued at ${price} per share"
+    msg = f"<@{id}> {stock.name} is valued at ${price} per share"
     image = get_image(stock)
     await ctx.send(msg, file=image)
 
