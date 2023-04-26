@@ -169,7 +169,7 @@ class StockCog(commands.Cog):
         stock.get_next_price()
 
       # Update pins
-      if pin_count == 2:
+      if pin_count == 3:
         pin_count = 0
         for pin in pins_to_update:
           msg="**Stock Prices**\n"
