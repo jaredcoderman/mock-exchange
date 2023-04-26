@@ -169,7 +169,7 @@ class StockCog(commands.Cog):
         stock.get_next_price()
 
       # Update pins
-      if pin_count == 5:
+      if pin_count == 2:
         pin_count = 0
         for pin in pins_to_update:
           msg="**Stock Prices**\n"
@@ -183,7 +183,7 @@ class StockCog(commands.Cog):
       if count == 100:
         count = 0
         await self.save_stocks()
-      await asyncio.sleep(.5)
+      await asyncio.sleep(2)
 
   # Runs asynchronous functions
   async def callback(self):
