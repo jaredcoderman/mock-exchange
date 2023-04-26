@@ -16,7 +16,7 @@ class Bank:
     else:
       return 0
   
-  def change_cash(self, id, amt):
+  async def change_cash(self, id, amt):
     id = str(id)
     amt = round(amt, 2)
     data = get_data(self.db)
@@ -24,6 +24,7 @@ class Bank:
       data["user_money"][id] += amt
     else:
       data["user_money"][id] = amt
+    await self.bot.get_cog("BankCog").update_roles(id)
     self.db.update_data(json.dumps(data))
 
   def get_shares(self, id, stock):

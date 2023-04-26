@@ -224,7 +224,7 @@ class StockCog(commands.Cog):
 
 
     if bank.get_cash(id) >= total_price:
-      bank.change_cash(id, total_price * -1)
+      await bank.change_cash(id, total_price * -1)
       bank.add_certificate(id, stock_name, int(amount), total_price)
       shares, value = bank.get_shares(id, stock_name)
       msg = f"<@{id}> purchased {amount} shares of {stock.name} for ${total_price} at ${price} per share. You now have {str(shares)} shares"
@@ -331,7 +331,7 @@ class StockCog(commands.Cog):
     # Make the sale happen or cancel depending on reaction
     if str(reaction) == "👍":
       bank.remove_shares(id, stock_name)
-      bank.change_cash(id, total_sell_price)
+      await bank.change_cash(id, total_sell_price)
       msg = f"<@{id}> sold {shares} shares of {self.stocks[stock_name].name} for ${round(total_sell_price, 2)} and made ${profit} in profit!"
       await ctx.send(msg)
     elif str(reaction) == "👎":

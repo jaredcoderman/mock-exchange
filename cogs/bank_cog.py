@@ -13,12 +13,61 @@ class BankCog(commands.Cog):
     print("Bank cog online...")
     self.bank = Bank(self.bot)
 
+
+  # Check and set roles for net worth
+  async def update_roles(self, user_id):
+    
+    # Dict that stores roles and their associated values
+    networth_roles = {
+      "Whale": 1000000,
+      "Bronze Whale": 2500000,
+      "Silver Whale": 5000000,
+      "Gold Whale": 10000000,
+      "Platinum Whale": 20000000,
+      "Diamond Whale": 50000000,
+      "Ruby Whale": 100000000,
+      "Grandmaster Whale": 250000000,
+      "Billionare": 1000000000
+    }
+    balance = self.bank.get_cash(user_id)
+
+    # Get the role the user should have
+    new_role = ""
+    for role, value in networth_roles.items():
+      if balance >= value:
+        new_role = role
+    if new_role == "":
+      return
+
+    # Find guilds that have this bot that the user is in
+    guilds = []
+    members = []
+    for guild in self.bot.guilds:
+      member = await guild.fetch_member(user_id)
+      if member:
+        guilds.append(guild)
+        members.append(member)
+
+
+    # Check if they have the role
+    for guild in guilds:
+      role_obj = None
+      for role in guild.roles:
+        if role.name == new_role:
+          role_obj = role
+          break
+      for member in members:
+        if member.get_role(role_obj.id):
+          continue
+        await member.add_roles(role_obj)
+    
+
   # Get daily $1000
   @commands.command("daily")
   @commands.cooldown(1, 86400, commands.BucketType.user)
   async def daily(self, ctx):
     id = str(ctx.author.id)
-    self.bank.change_cash(id, 1000)
+    await self.bank.change_cash(id, 1000000)
     msg = f"<@{id}> claimed their daily reward for $1000"
     await ctx.send(msg)
       
@@ -70,8 +119,8 @@ class BankCog(commands.Cog):
       await ctx.send(f"<@{donor}> You can't donate more money than you have!")
     
     # Remove amount from donor and add amount to donee
-    self.bank.change_cash(donor, amt * -1)
-    self.bank.change_cash(donee, amt)
+    await self.bank.change_cash(donor, amt * -1)
+    await self.bank.change_cash(donee, amt)
     await ctx.send(f"<@{donor}> donated ${amt} to <@{donee}>")
       
     
