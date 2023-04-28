@@ -174,7 +174,14 @@ class StockCog(commands.Cog):
         for pin in pins_to_update:
           msg="**Stock Prices**\n"
           for stock_name, stock in self.stocks.items():
-            price_diff = round(stock.get_price(False) - stock.initial_price)
+            diff = stock.get_price(False) - stock.initial_price
+            price_diff = 0
+            if diff < 1 and diff > 0:
+              price_diff = round(diff, 2)
+            elif diff > -1 and diff < 0:
+              price_diff = round(diff, 2)
+            else:
+              price_diff = round(diff)
             if price_diff > 0:
               price_diff = "+" + str(price_diff)
             msg += f"{stock_name.capitalize()}: ${stock.get_price(True)}  {self.get_above_initial_price_emoji(stock)} {price_diff}  {self.get_trending_emoji(stock)}\n"
