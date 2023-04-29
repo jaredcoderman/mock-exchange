@@ -122,7 +122,6 @@ class StockCog(commands.Cog):
       await asyncio.sleep(1)
 
   # Starts the stock price changges
-
   def get_above_initial_price_emoji(self, stock):
     if stock.get_price(False) > stock.initial_price:
       return ":green_circle:"
@@ -134,7 +133,6 @@ class StockCog(commands.Cog):
     if stock.get_previous_prices()[75] < stock.get_previous_prices()[-1]:
       return ":chart_with_upwards_trend:"
     return ":chart_with_downwards_trend:"
-
 
   async def run_stocks(self):
     count = 0
@@ -369,12 +367,51 @@ class StockCog(commands.Cog):
     await self.save_stocks()
     await ctx.send("Saving stocks!")
 
+  # Shows top 10 players net worths and the user who called it's place in total players
+  @commands.command("leaderboard")
+  async def leaderboard(self, ctx):
+    # 1. Get all players and their net worth
+    db = self.bot.get_cog("DBCog").db
+    data = db.get_record()
+    members = data["user_money"].keys()
+    net_worths = {}
+    for member in members:
+      net_worths[member] = self.bot.get_cog("BankCog").get_net_worth(member)
+
+    # 2. Sort those players highest to lowest
+    sorted_members = sorted(net_worths.items(), key=lambda x: x[1], reverse=True)
+
+    # 3. Store the user who called the commands place
+    this_user = str(ctx.author.id)
+    this_users_place = 0
+    for index, pair in enumerate(sorted_members):
+      if pair[0] == this_user:
+        this_users_place = index + 1
+        break
+
+    # 4. Trim the list to 10 players if there are more than 10
+    if len(sorted_members > 10):
+      sorted_members = sorted_members[:10]
+
+    # 5. Loop through the list and add each player to a string
+    embed = discord.Embed(
+      colour= discord.Colour.brand_green(),
+      title= "Net Worth Leaderboard",
+    )
+    msg = ""
+    for pair in sorted_members:
+      member_obj = await self.bot.fetch_user(user_id)
+      #msg += f"{"
+
+    # 6. @ the user and print the string
+
+
+
   # Check if a string is a stock
   def is_stock(self, stock: str):
     if stock in self.stocks.keys():
       return True
     return False
-
 
 async def setup(bot):
   await bot.add_cog(StockCog(bot))

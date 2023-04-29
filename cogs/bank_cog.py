@@ -85,6 +85,11 @@ class BankCog(commands.Cog):
     msg = f"<@{id}>\n{display_name} has ${amt}"
     await ctx.send(msg)
 
+  def get_net_worth(self, user_id):
+    balance = self.bank.get_cash(user_id)
+    portfolio_value = self.bot.get_cog("StockCog").get_share_value_dict_for_stock(user_id)["total_value"]
+    return round(balance + portfolio_value, 2)
+
   # Get self or other net worth
   @commands.command("networth")
   async def networth(self, ctx, user_at=None):
