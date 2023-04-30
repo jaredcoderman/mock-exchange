@@ -390,7 +390,7 @@ class StockCog(commands.Cog):
         break
 
     # 4. Trim the list to 10 players if there are more than 10
-    if len(sorted_members > 10):
+    if len(sorted_members) > 10:
       sorted_members = sorted_members[:10]
 
     # 5. Loop through the list and add each player to a string
@@ -399,11 +399,14 @@ class StockCog(commands.Cog):
       title= "Net Worth Leaderboard",
     )
     msg = ""
-    for pair in sorted_members:
-      member_obj = await self.bot.fetch_user(user_id)
-      #msg += f"{"
+    for index,pair in enumerate(sorted_members):
+      member_obj = await self.bot.fetch_user(pair[0])
+      msg += f"**{index+1}** - {member_obj.display_name}: ${pair[1]}\n"
 
     # 6. @ the user and print the string
+    msg += f"<@{this_user}>'s Place: {this_users_place}"
+    embed.description = msg
+    await ctx.send(embed=embed)
 
 
 
