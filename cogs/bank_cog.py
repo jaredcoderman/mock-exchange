@@ -76,7 +76,7 @@ class BankCog(commands.Cog):
   @commands.cooldown(1, 86400, commands.BucketType.user)
   async def daily(self, ctx):
     id = str(ctx.author.id)
-    await self.bank.change_cash(id, 2500000)
+    await self.bank.change_cash(id, 1000)
     msg = f"<@{id}> claimed their daily reward for $1000"
     await ctx.send(msg)
       
