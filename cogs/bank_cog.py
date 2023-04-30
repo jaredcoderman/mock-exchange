@@ -50,12 +50,10 @@ class BankCog(commands.Cog):
     for member in members:
       for role in member.roles: 
         if role.name in networth_roles.keys() and role.name != new_role:
-          print("found role to remove")
           await member.remove_roles(role)
     
     # Return if they dont have enough for any roles
     if new_role == "":
-      print("returning")
       return
 
     # Check if they have the role

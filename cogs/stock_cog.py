@@ -333,7 +333,7 @@ class StockCog(commands.Cog):
       check=lambda reaction, user: reaction.message.id == msg.id
       and int(id) == user.id
       and reaction.emoji == "👍" or reaction.emoji == "👎",
-      timeout=None,
+      timeout=60,
     )
 
     # Make the sale happen or cancel depending on reaction
