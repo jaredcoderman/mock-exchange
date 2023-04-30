@@ -118,7 +118,7 @@ class BankCog(commands.Cog):
   async def donate(self, ctx, user_at, amt):
     donor = str(ctx.author.id)
     donee = user_at[2:-1]
-    amt = int(amt)
+    amt = float(amt)
     # Check donor has amount they are donating
     if self.bank.get_cash(donor) < amt:
       await ctx.send(f"<@{donor}> You can't donate more money than you have!")
