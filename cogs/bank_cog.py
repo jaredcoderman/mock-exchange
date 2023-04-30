@@ -29,15 +29,13 @@ class BankCog(commands.Cog):
       "Grandmaster Whale": 250000000,
       "Billionare": 1000000000
     }
-    balance = self.bank.get_cash(user_id)
+    networth = self.get_net_worth(user_id)
 
     # Get the role the user should have
     new_role = ""
     for role, value in networth_roles.items():
-      if balance >= value:
+      if networth >= value:
         new_role = role
-    if new_role == "":
-      return
 
     # Find guilds that have this bot that the user is in
     guilds = []
@@ -48,6 +46,17 @@ class BankCog(commands.Cog):
         guilds.append(guild)
         members.append(member)
 
+    # Remove roles they shouldn't have
+    for member in members:
+      for role in member.roles: 
+        if role.name in networth_roles.keys() and role.name != new_role:
+          print("found role to remove")
+          await member.remove_roles(role)
+    
+    # Return if they dont have enough for any roles
+    if new_role == "":
+      print("returning")
+      return
 
     # Check if they have the role
     for guild in guilds:
@@ -67,7 +76,7 @@ class BankCog(commands.Cog):
   @commands.cooldown(1, 86400, commands.BucketType.user)
   async def daily(self, ctx):
     id = str(ctx.author.id)
-    await self.bank.change_cash(id, 1000)
+    await self.bank.change_cash(id, 2500000)
     msg = f"<@{id}> claimed their daily reward for $1000"
     await ctx.send(msg)
       
