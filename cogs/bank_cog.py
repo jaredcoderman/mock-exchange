@@ -26,7 +26,7 @@ class BankCog(commands.Cog):
       "Platinum Whale": 20000000,
       "Diamond Whale": 50000000,
       "Ruby Whale": 100000000,
-      "Grandmaster Whale": 250000000,
+      "Grandmaster": 250000000,
       "Billionare": 1000000000
     }
     networth = self.get_net_worth(user_id)
@@ -63,10 +63,11 @@ class BankCog(commands.Cog):
         if role.name == new_role:
           role_obj = role
           break
-      for member in members:
-        if member.get_role(role_obj.id):
-          continue
-        await member.add_roles(role_obj)
+      if role_obj:
+        for member in members:
+          if member.get_role(role_obj.id):
+            continue
+          await member.add_roles(role_obj)
     
 
   # Get daily $1000

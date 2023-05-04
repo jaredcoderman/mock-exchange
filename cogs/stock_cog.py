@@ -230,10 +230,9 @@ class StockCog(commands.Cog):
       amount = (int(amount[:-1]) / 100 * bank.get_cash(id)) // price
     total_price = round(stock.get_price(False) * float(amount), 2)
 
-
     if bank.get_cash(id) >= total_price:
-      await bank.change_cash(id, total_price * -1)
       bank.add_certificate(id, stock_name, int(amount), total_price)
+      await bank.change_cash(id, total_price * -1)
       shares, value = bank.get_shares(id, stock_name)
       msg = f"<@{id}> purchased {amount} shares of {stock.name} for ${total_price} at ${round(price, 2)} per share. You now have {str(shares)} shares"
       await ctx.send(msg)
@@ -301,11 +300,6 @@ class StockCog(commands.Cog):
     else:
       total_emoji = ":red_circle:"
     msg = f"Value: ${round(total_stocks['total_value'], 2)} | Profit: ${round(total_profit, 2)} {total_emoji}"
-    # embed = discord.Embed(
-    #   colour= discord.Colour.brand_green(),
-    #   title= f"{display_name}'s portfolio",
-    #   description={msg}
-    # )
 
     embed.description = msg
     embed.set_thumbnail(url=user_obj.display_avatar)
