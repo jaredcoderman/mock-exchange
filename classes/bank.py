@@ -27,6 +27,14 @@ class Bank:
     await self.bot.get_cog("BankCog").update_roles(id)
     self.db.update_data(json.dumps(data))
 
+  async def set_cash(self, id, amt):
+    id = str(id)
+    amt = round(amt, 2)
+    data = get_data(self.db)
+    data["user_money"][id] = amt
+    await self.bot.get_cog("BankCog").update_roles(id)
+    self.db.update_data(json.dumps(data))
+
   def get_shares(self, id, stock):
     id = str(id)
     portfolio = {}

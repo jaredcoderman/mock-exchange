@@ -33,7 +33,6 @@ class AlertCog(commands.Cog):
     record = db.get_record()
     for index, alert in enumerate(record["alerts"][user_id], start=0):
       if alert["id"] == uuid:
-        print("Found")
         record["alerts"][user_id].pop(index)
         db.update_data(json.dumps(record))
         return
@@ -52,9 +51,10 @@ class AlertCog(commands.Cog):
     if not stock_cog.is_stock(stock_name):
       await ctx.send(f"Error: <@{str_id}> {stock_name} is not a stock! Use !stocks to see a list")
       return
+    stock = stock_cog.stocks[stock_name]
 
     # Check if alert_type is target or profit
-    if not alert_type in ("target", "profit"):
+    if not alert_type in ("target", "profit", "trending"):
       await ctx.send(f"Error: <@{str_id}> {alert_type} is not a valid alert type, try 'target' or 'profit'")
       return
 
@@ -69,13 +69,12 @@ class AlertCog(commands.Cog):
     if alert_type == "target":
       if value.isnumeric(): 
         alert_dict["value"] = value
-        alert_dict["price_when_created"] = stock_cog.stocks[stock_name].get_price(True)
+        alert_dict["price_when_created"] = stock.get_price(True)
       else:
         await ctx.send(f"Error: <@{str_id}> {value} is not a valid alert value, it must be only numbers when using 'target'")
         return
-
     # Check if alert value for alert_type profit is either only numbers or starts with percent
-    if alert_type == "profit":
+    elif alert_type == "profit":
       if value.isnumeric():
         alert_dict["value"] = value
       elif value[:-1].isnumeric() and value[-1] == "%":
@@ -83,6 +82,12 @@ class AlertCog(commands.Cog):
       else:
         await ctx.send(f"Error: <@{str_id}> {value} is not a valid alert value, it must start with % or only contain numbers when using 'profit'")
         return
+    # Check that value is either 'up' or 'down' for alert_type trending
+    else:
+      if not value in ("up", "down"):
+        await ctx.send(f"Error: <@{str_id}> {value} is not a valid alert value for alert_type trending: value must be 'up' or 'down'")
+        return
+      alert_dict["value"] = value
     
     # Write the new alert to the db
     db = self.bot.get_cog("DBCog").db
@@ -103,14 +108,15 @@ class AlertCog(commands.Cog):
     for index, alert in enumerate(alerts, start=1):
       if alert["alert_type"] == "target":
         msg += f"Alert {index}: {alert['stock'].capitalize()} hitting ${alert['value']}\n"
-      else:
+      elif alert["alert_type"] == "profit":
         msg += f"Alert {index}: {alert['stock'].capitalize()} hitting ${alert['value']} profit\n"
+      else:
+        msg += f"Alert {index}: {alert['stock'].capitalize()} starts trending {alert['value']}ward\n"
     await ctx.send(msg)
 
   # Command to remove an alert given a number which can be found from !alerts
   @commands.command("remove_alert")
   async def remove_alert(self, ctx, number):
-    print(self, ctx, number)
     str_id = str(ctx.author.id)
     alerts = self.get_alerts(str_id)
     self.remove_alert_from_db(str_id, alerts[int(number)-1]["id"])

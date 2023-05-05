@@ -87,8 +87,8 @@ class StockCog(commands.Cog):
     while True:
       # Loop through users and their alerts
       for user_id, alerts_arr in alert_cog.get_users_and_alerts().items():
+        user = await self.bot.fetch_user(user_id)
         for alert in alerts_arr:
-          user = await self.bot.fetch_user(user_id)
           # Check all target alerts
           if alert["alert_type"] == "target":
             goal_diff = float(alert["value"]) - float(alert["price_when_created"])
@@ -104,7 +104,7 @@ class StockCog(commands.Cog):
               alert_cog.remove_alert_from_db(user_id, alert["id"])
               await user.send(f"{alert['alert_type'].capitalize()} Alert: {alert['stock']} hit {alert['value']}")
           # Check all profit alerts
-          else:
+          elif alert["alert_type"] == "profit":
             bank = self.bot.get_cog("BankCog").bank
             shares, value = bank.get_shares(user_id, alert["stock"])
             current_price = self.stocks[alert["stock"]].get_price(False)
@@ -119,6 +119,11 @@ class StockCog(commands.Cog):
             elif profit >= int(alert["value"]):
               alert_cog.remove_alert_from_db(user_id, alert["id"])
               await user.send(f"{alert['alert_type'].capitalize()} Alert: Your Profit for {alert['stock']} hit {alert['value']}")
+          else:
+            stock = self.stocks[alert["stock"]]
+            if alert["value"] == stock.trending:
+              alert_cog.remove_alert_from_db(user_id, alert["id"])
+              await user.send(f"{alert['alert_type'].capitalize()} Alert: {alert['stock']} is now trending {stock.trending}ward!")
       await asyncio.sleep(1)
 
   # Starts the stock price changges
@@ -128,11 +133,11 @@ class StockCog(commands.Cog):
     return ":red_circle:"
     
   def get_trending_emoji(self, stock):
-    if len(stock.get_previous_prices()) < 76:
+    if not stock.trending:
       return ""
     if stock.get_previous_prices()[75] < stock.get_previous_prices()[-1]:
-      return ":chart_with_upwards_trend:"
-    return ":chart_with_downwards_trend:"
+      return f":chart_with_{stock.trending}wards_trend:"
+    return f":chart_with_{stock.trending}wards_trend:"
 
   async def run_stocks(self):
     count = 0
@@ -191,7 +196,7 @@ class StockCog(commands.Cog):
       if count == 100:
         count = 0
         await self.save_stocks()
-      await asyncio.sleep(2)
+      await asyncio.sleep(2.5)
 
   # Runs asynchronous functions
   async def callback(self):

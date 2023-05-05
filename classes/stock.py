@@ -6,6 +6,7 @@ class Stock:
     self.initial_price = initial_price
     self.data = get_stock_data(start_price, initial_price)
     self.previous_prices = []
+    self.trending = None
     self.time_spot = 0
     self.last_price = 0
     self.max_prices = 100
@@ -22,6 +23,14 @@ class Stock:
       self.previous_prices.append(price)
     else:
       self.previous_prices.append(price)
+
+  def _update_trending(self):
+    if len(self.previous_prices) < 76:
+      return
+    if self.get_previous_prices()[75] < self.get_previous_prices()[-1]:
+      self.trending = "up"
+    else:
+      self.trending = "down"
     
   def get_next_price(self):
     self.time_spot += 1
@@ -31,6 +40,8 @@ class Stock:
       price = self.data[self.time_spot]
       self.last_price = price
       self.add_to_previous_prices(self.last_price)
+    # Update trending
+    self._update_trending()
     return price
 
   def get_price(self, rounded):

@@ -18,6 +18,7 @@ intents.message_content = True
 intents.typing = False
 intents.presences = False
 intents.members = True
+intents.reactions = True
 
 help_command = commands.DefaultHelpCommand(no_category='Commands')
 

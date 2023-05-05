@@ -26,8 +26,9 @@ class BankCog(commands.Cog):
       "Platinum Whale": 20000000,
       "Diamond Whale": 50000000,
       "Ruby Whale": 100000000,
-      "Grandmaster Whale": 250000000,
-      "Billionare": 1000000000
+      "Grandmaster": 250000000,
+      "Billionaire": 1000000000,
+      "Trillionaire": 1000000000000 
     }
     networth = self.get_net_worth(user_id)
 
@@ -76,6 +77,16 @@ class BankCog(commands.Cog):
     id = str(ctx.author.id)
     await self.bank.change_cash(id, 1000)
     msg = f"<@{id}> claimed their daily reward for $1000"
+    await ctx.send(msg)
+
+  @commands.command("setcash")
+  @commands.has_any_role("Admin")
+  async def setcash(self, ctx, user_at, amt):
+    this_id = str(ctx.author.id)
+    user_id = user_at[2:-1]
+    amt = int(amt)
+    await self.bank.set_cash(user_id, amt)
+    msg = f"<@{this_id}> set {user_at}'s cash too {amt}"
     await ctx.send(msg)
       
   # Check total balance
