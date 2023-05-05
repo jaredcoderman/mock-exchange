@@ -64,10 +64,11 @@ class BankCog(commands.Cog):
         if role.name == new_role:
           role_obj = role
           break
-      for member in members:
-        if member.get_role(role_obj.id):
-          continue
-        await member.add_roles(role_obj)
+      if role_obj:
+        for member in members:
+          if member.get_role(role_obj.id):
+            continue
+          await member.add_roles(role_obj)
     
 
   # Get daily $1000
