@@ -5,6 +5,7 @@ import numpy as np
 import asyncio
 import json
 
+from numerize.numerize import numerize
 from threading import Thread
 from discord.ext import commands
 from classes.stock import Stock
@@ -214,7 +215,7 @@ class StockCog(commands.Cog):
     id = str(ctx.author.id)
     stock = self.stocks[stock_name.lower()]
     price = str(stock.get_price(True))
-    msg = f"<@{id}> {stock.name} is valued at ${price} per share"
+    msg = f"<@{id}> {stock.name} is valued at ${numerize(price, 2)} per share"
     image = get_image(stock)
     await ctx.send(msg, file=image)
 
@@ -232,17 +233,17 @@ class StockCog(commands.Cog):
         return   
       amount = bank.get_cash(id) // price
     elif amount[-1] == "%":
-      amount = (int(amount[:-1]) / 100 * bank.get_cash(id)) // price
+      amount = int(amount[:-1]) / 100 * bank.get_cash(id) // price
     total_price = round(stock.get_price(False) * float(amount), 2)
 
     if bank.get_cash(id) >= total_price:
       bank.add_certificate(id, stock_name, int(amount), total_price)
       await bank.change_cash(id, total_price * -1)
       shares, value = bank.get_shares(id, stock_name)
-      msg = f"<@{id}> purchased {amount} shares of {stock.name} for ${total_price} at ${round(price, 2)} per share. You now have {str(shares)} shares"
+      msg = f"<@{id}> purchased {numerize(int(amount), 2)} shares of {stock.name} for ${numerize(total_price, 2)} at ${numerize(price, 2)} per share. You now have {numerize(shares, 2)} shares"
       await ctx.send(msg)
     else:
-      await ctx.send(f"<@{id}> not enough money. Total price is ${total_price}, you have ${str(bank.get_cash(id))}")
+      await ctx.send(f"<@{id}> not enough money. Total price is ${numerize(total_price, 2)}, you have ${numerize(bank.get_cash(id), 2)}")
 
   # Check your shares with a given stock
   @commands.command("shares")
@@ -250,7 +251,7 @@ class StockCog(commands.Cog):
     bank = self.bot.get_cog("BankCog").bank
     id = str(ctx.author.id)
     shares, value = bank.get_shares(id, stock_name) 
-    msg = f"<@{id}> has {str(shares)} shares in {stock_name} worth ${str(value)}"
+    msg = f"<@{id}> has {numerize(shares, 2)} shares in {stock_name} worth ${numerize(value, 2)}"
     await ctx.send(msg)
 
   def get_share_value_dict_for_stock(self, user_id: str):
@@ -298,13 +299,13 @@ class StockCog(commands.Cog):
         emoji = ":green_circle:"
       else:
         emoji = ":red_circle:"
-      embed.add_field(name=f"{data['shares']} {stock.capitalize()}", value=f"${round(data['value'], 2)} Profit: ${profit} {emoji}")
+      embed.add_field(name=f"{numerize(data['shares'], 2)} {stock.capitalize()}", value=f"${numerize(data['value'], 2)} Profit: ${numerize(profit, 2)} {emoji}")
     total_emoji = ""
     if total_profit > 0:
       total_emoji = ":green_circle:"
     else:
       total_emoji = ":red_circle:"
-    msg = f"Value: ${round(total_stocks['total_value'], 2)} | Profit: ${round(total_profit, 2)} {total_emoji}"
+    msg = f"Value: ${numerize(total_stocks['total_value'], 2)} | Profit: ${numerize(total_profit, 2)} {total_emoji}"
 
     embed.description = msg
     embed.set_thumbnail(url=user_obj.display_avatar)
@@ -322,7 +323,7 @@ class StockCog(commands.Cog):
     profit = round((total_sell_price - (value)), 2)
 
     # Prompt the user
-    msg = await ctx.send(f"<@{id}> are you sure you want to sell {shares} {self.stocks[stock_name].name} for a profit of ${profit}")
+    msg = await ctx.send(f"<@{id}> are you sure you want to sell {numerize(shares, 2)} {self.stocks[stock_name].name} for a profit of ${numerize(profit, 2)}")
     await msg.add_reaction("👍")
     await msg.add_reaction("👎")
 
@@ -339,7 +340,7 @@ class StockCog(commands.Cog):
     if str(reaction) == "👍":
       bank.remove_shares(id, stock_name)
       await bank.change_cash(id, total_sell_price)
-      msg = f"<@{id}> sold {shares} shares of {self.stocks[stock_name].name} for ${round(total_sell_price, 2)} and made ${profit} in profit!"
+      msg = f"<@{id}> sold {numerize(shares, 2)} shares of {self.stocks[stock_name].name} for ${numerize(total_sell_price, 2)} and made ${numerize(profit, 2)} in profit!"
       await ctx.send(msg)
     elif str(reaction) == "👎":
       await ctx.send(f"<@{id}> sale cancelled...")
@@ -349,7 +350,7 @@ class StockCog(commands.Cog):
   async def stocks(self, ctx):
     msg = ""
     for stock in self.stocks.values():
-      msg += f"{stock.name}: ${stock.get_price(True)}, Initial Price: ${stock.initial_price}\n"
+      msg += f"{stock.name}: ${numerize(stock.get_price(True), 2)}, Initial Price: ${stock.initial_price}\n"
     await ctx.send(msg)
 
   async def save_stocks(self):

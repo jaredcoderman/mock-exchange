@@ -1,5 +1,6 @@
 import discord
 
+from numerize.numerize import numerize
 from discord.ext import commands
 
 class LeaderboardCog(commands.Cog):
@@ -44,7 +45,7 @@ class LeaderboardCog(commands.Cog):
         msg = ""
         for index,pair in enumerate(sorted_members):
             member_obj = await self.bot.fetch_user(pair[0])
-            msg += f"**{index+1}** - {member_obj.display_name}: ${pair[1]}\n"
+            msg += f"**{index+1}** - {member_obj.display_name}: ${numerize(pair[1], 2)}\n"
 
         # 6. @ the user and print the string
         msg += f"<@{this_user}>'s Place: {this_users_place}"
