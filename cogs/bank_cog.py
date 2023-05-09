@@ -14,6 +14,9 @@ class BankCog(commands.Cog):
     print("Bank cog online...")
     self.bank = Bank(self.bot)
 
+  @commands.Cog.listener()
+  async def on_command_error(self, ctx, error):
+    await ctx.send(error)
 
   # Check and set roles for net worth
   async def update_roles(self, user_id):

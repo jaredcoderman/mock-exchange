@@ -214,7 +214,7 @@ class StockCog(commands.Cog):
   async def price(self, ctx, stock_name):
     id = str(ctx.author.id)
     stock = self.stocks[stock_name.lower()]
-    price = str(stock.get_price(True))
+    price = stock.get_price(True)
     msg = f"<@{id}> {stock.name} is valued at ${numerize(price, 2)} per share"
     image = get_image(stock)
     await ctx.send(msg, file=image)
@@ -222,7 +222,7 @@ class StockCog(commands.Cog):
   # Purchase a stock with a number of shares
   @commands.command("buy")
   async def buy(self, ctx, stock_name, amount):
-    stock = self.stocks[stock_name]
+    stock = self.stocks[stock_name.lower()]
     price = stock.get_price(False)
     bank = self.bot.get_cog("BankCog").bank
     
@@ -364,7 +364,7 @@ class StockCog(commands.Cog):
     print("Saving stocks...")
 
   # Save stocks so that stock prices are the same after deployment
-  @commands.has_any_role("Admin")
+  @commands.has_any_role("StockAdmin")
   @commands.command("savestocks")
   async def savestocks(self, ctx):
     await self.save_stocks()
